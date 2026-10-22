@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="960" height="380" rx="16" fill="#f8fafc"/>
+  <text x="32" y="44" font-size="20" font-weight="700" fill="#0f172a">Three layers on one page</text>
+  <text x="32" y="68" font-size="13" fill="#475569">Clicks on your UI stay in the page. Clicks anywhere else go to Unity, like a WebGL canvas.</text>
+
+  <!-- stacked layers, isometric-ish -->
+  <g transform="translate(70,110)">
+    <polygon points="0,170 300,170 380,230 80,230" fill="#0f172a"/>
+    <polygon points="150,190 190,178 230,190 190,202" fill="#475569"/>
+    <polygon points="150,190 190,202 190,214 150,202" fill="#334155"/>
+    <polygon points="230,190 190,202 190,214 230,202" fill="#64748b"/>
+    <polygon points="0,95 300,95 380,155 80,155" fill="#ffffff" fill-opacity="0.75" stroke="#2563eb" stroke-dasharray="5 4"/>
+    <polygon points="230,112 290,112 310,128 250,128" fill="#2563eb"/>
+    <polygon points="60,108 140,108 152,118 72,118" fill="#93c5fd"/>
+    <polygon points="0,20 300,20 380,80 80,80" fill="none" stroke="#16a34a" stroke-dasharray="5 4"/>
+    <polygon points="14,30 84,30 92,37 22,37" fill="#1f2937"/>
+    <circle cx="26" cy="33.5" r="2.5" fill="#22c55e"/>
+  </g>
+
+  <g font-size="13">
+    <line x1="460" y1="140" x2="520" y2="140" stroke="#16a34a" stroke-width="2"/>
+    <text x="530" y="136" font-weight="700" fill="#14532d">Status panel (package)</text>
+    <text x="530" y="156" fill="#334155">Collapsible, draggable, remembers its place.</text>
+    <text x="530" y="174" fill="#334155">Lives in a shadow root, so styles never mix.</text>
+
+    <line x1="460" y1="220" x2="520" y2="220" stroke="#2563eb" stroke-width="2"/>
+    <text x="530" y="216" font-weight="700" fill="#1e3a8a">#app: your H5 UI</text>
+    <text x="530" y="236" fill="#334155">index.html, src/main.js, src/style.css.</text>
+    <text x="530" y="254" fill="#334155">Children get pointer events; empty space passes through.</text>
+
+    <line x1="460" y1="305" x2="520" y2="305" stroke="#0f172a" stroke-width="2"/>
+    <text x="530" y="300" font-weight="700" fill="#0f172a">&lt;video id="stream"&gt;: Unity 3D</text>
+    <text x="530" y="320" fill="#334155">Fills the window like the WebGL template canvas.</text>
+    <text x="530" y="338" fill="#334155">Click it to focus; keys and pointer go to Unity.</text>
+  </g>
+</svg>

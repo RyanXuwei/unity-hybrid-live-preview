@@ -1,0 +1,20 @@
+{
+    "name": "RyanXuWei.HybridLivePreview.Input",
+    "rootNamespace": "RyanXuWei.HybridLivePreview",
+    "references": [
+        "RyanXuWei.HybridLivePreview.Streaming",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_EDITOR",
+        "ENABLE_INPUT_SYSTEM"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

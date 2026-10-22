@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="330" viewBox="0 0 960 330" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="960" height="330" rx="16" fill="#f8fafc"/>
+  <text x="32" y="44" font-size="20" font-weight="700" fill="#0f172a">Who owns which file</text>
+  <text x="32" y="68" font-size="13" fill="#475569">On first Play the template is copied into your project. After that only src/hlp/ is updated by the package.</text>
+
+  <rect x="32" y="90" width="470" height="210" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <g font-family="Consolas, Menlo, monospace" font-size="14">
+    <text x="52" y="122" fill="#0f172a">&lt;YourProject&gt;/HybridPreviewWeb/</text>
+    <text x="72" y="150" fill="#1e3a8a">├─ index.html        (#app)</text>
+    <text x="72" y="174" fill="#1e3a8a">├─ vite.config.js</text>
+    <text x="72" y="198" fill="#1e3a8a">├─ src/main.js</text>
+    <text x="72" y="222" fill="#1e3a8a">├─ src/style.css</text>
+    <text x="72" y="246" fill="#b45309">├─ src/hlp/          (package)</text>
+    <text x="72" y="270" fill="#64748b">└─ node_modules/     (git-ignore)</text>
+  </g>
+
+  <rect x="540" y="110" width="20" height="20" rx="4" fill="#1e3a8a"/>
+  <text x="572" y="125" font-size="14" font-weight="700" fill="#0f172a">Yours</text>
+  <text x="572" y="145" font-size="13" fill="#334155">Build your UI here and commit it with your project.</text>
+  <text x="572" y="163" font-size="13" fill="#334155">Package updates never overwrite these files.</text>
+
+  <rect x="540" y="196" width="20" height="20" rx="4" fill="#b45309"/>
+  <text x="572" y="211" font-size="14" font-weight="700" fill="#0f172a">Package</text>
+  <text x="572" y="231" font-size="13" fill="#334155">Streaming, input forwarding, status panel, signaling.</text>
+  <text x="572" y="249" font-size="13" fill="#334155">Refreshed on Play; edits here are replaced.</text>
+</svg>

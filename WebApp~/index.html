@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hybrid Live Preview</title>
+  </head>
+  <body>
+    <main class="stage">
+      <!-- Unity camera over WebRTC; behaves like the WebGL canvas (input is forwarded to Unity). -->
+      <video id="stream" autoplay playsinline muted tabindex="-1"></video>
+
+      <!-- Your H5 UI, layered over the 3D view. -->
+      <div id="app"></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

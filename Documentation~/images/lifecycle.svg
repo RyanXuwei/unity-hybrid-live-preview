@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect width="960" height="300" rx="16" fill="#f8fafc"/>
+  <text x="32" y="44" font-size="20" font-weight="700" fill="#0f172a">Play and Stop</text>
+  <text x="32" y="68" font-size="13" fill="#475569">You only press Play. The package starts and cleans up everything else.</text>
+
+  <g font-size="12">
+    <rect x="32" y="96" width="140" height="78" rx="10" fill="#2563eb"/>
+    <text x="48" y="124" font-size="14" font-weight="700" fill="#ffffff">▶ Play</text>
+    <text x="48" y="146" fill="#dbeafe">Exiting Edit Mode</text>
+    <path d="M172,135 L198,135" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="202" y="96" width="170" height="78" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="218" y="122" font-weight="700" fill="#0f172a">1. Web app ready</text>
+    <text x="218" y="142" fill="#334155">copy template, npm install</text>
+    <text x="218" y="160" fill="#64748b">(first run only)</text>
+    <path d="M372,135 L398,135" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="402" y="96" width="160" height="78" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="418" y="122" font-weight="700" fill="#0f172a">2. Vite starts</text>
+    <text x="418" y="142" fill="#334155">port 5173</text>
+    <text x="418" y="160" fill="#64748b">output in vite.log</text>
+    <path d="M562,135 L588,135" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="592" y="96" width="160" height="78" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="608" y="122" font-weight="700" fill="#0f172a">3. Streamer spawns</text>
+    <text x="608" y="142" fill="#334155">Game view sized to it</text>
+    <text x="608" y="160" fill="#334155">input devices added</text>
+    <path d="M752,135 L778,135" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="782" y="96" width="146" height="78" rx="10" fill="#16a34a"/>
+    <text x="798" y="122" font-weight="700" fill="#ffffff">4. Chrome opens</text>
+    <text x="798" y="142" fill="#dcfce7">badge shows LIVE</text>
+    <text x="798" y="160" fill="#dcfce7">about 10 s cold start</text>
+
+    <rect x="32" y="200" width="140" height="70" rx="10" fill="#475569"/>
+    <text x="48" y="228" font-size="14" font-weight="700" fill="#ffffff">■ Stop</text>
+    <text x="48" y="250" fill="#e2e8f0">Exiting Play Mode</text>
+    <path d="M172,235 L198,235" stroke="#94a3b8" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="202" y="200" width="726" height="70" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+    <text x="218" y="228" font-weight="700" fill="#0f172a">Chrome closes gracefully · Vite stops · Game view size, Input System settings and devices are restored</text>
+    <text x="218" y="250" fill="#64748b">Process IDs are kept in Library/HybridLivePreview, so even an Editor restart can clean up leftovers.</text>
+  </g>
+</svg>
