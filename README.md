@@ -12,6 +12,7 @@ No WebGL build, no waiting. Edit a C# script or a CSS file and look again.
 
 - **One button.** Play starts a Vite dev server and a dedicated Chrome window; Stop closes both and restores everything it changed.
 - **Looks like the WebGL build.** The stream follows the browser window's size and aspect, capped at *Player Settings → WebGL → Default Canvas Width/Height*, and fills the window like the WebGL template canvas. The Game view is locked to the same resolution, so `Screen`, camera aspect and UI layout match.
+- **Same pixels as the Game view.** The stream copies the Game view's finished image, so reflections, post-processing, camera stacks and Screen Space - Overlay canvases look the same in Chrome.
 - **Real HTML UI.** Your page is plain HTML/CSS/JS served by Vite, layered over the 3D view. Use any framework you like.
 - **Input goes back to Unity.** Pointer (mouse, pen, touch), wheel and keyboard events on the 3D view are replayed on virtual Input System devices, so `Mouse.current`, `Keyboard.current`, `Touchscreen.current`, Input Actions and `InputSystemUIInputModule` all respond. `Cursor.lockState` turns into browser Pointer Lock.
 - **Stays out of your builds.** Every assembly is Editor-only; nothing from this package is compiled into a player.
@@ -133,6 +134,7 @@ While the preview runs, the package temporarily sets the Input System's *Backgro
 |---|---|
 | Auto Launch On Play | Turns the whole preview on or off. |
 | Match Game View To Preview | Locks the Game view to the stream resolution during Play. |
+| Capture → Game View Output / Mirror Camera (Fallback) | **Game View Output** (default) streams exactly what the Game view shows. **Mirror Camera** renders `Camera.main` a second time and keeps streaming while the Game view is hidden, but effects computed only for the main camera, such as planar reflections, may not match. Applies from the next Play. |
 | Open Preview In Chrome | Reopens the preview window. |
 | Install Web App | Copies the template and runs `npm install` now. |
 | Stop Vite And Chrome | Closes leftover processes. |
@@ -143,7 +145,7 @@ While the preview runs, the package temporarily sets the Input System's *Backgro
 | Folder | Assembly | Role |
 |---|---|---|
 | `Editor/` | `RyanXuWei.HybridLivePreview.Editor` (Editor platform) | Play/Stop lifecycle, Vite and Chrome processes, Game view sizing, web app install and sync. |
-| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming` (`UNITY_EDITOR` only) | `PreviewStreamer`: mirror camera, WebRTC video track, data channel. |
+| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming` (`UNITY_EDITOR` only) | `PreviewStreamer`: Game view capture (or mirror camera), WebRTC video track, data channel. |
 | `Input/` | `RyanXuWei.HybridLivePreview.Input` (`UNITY_EDITOR` + `ENABLE_INPUT_SYSTEM`) | `RemoteInput`: replays browser input on virtual Input System devices. |
 | `WebApp~/` | (not imported by Unity) | Vite template, signaling relay, viewer, status panel. |
 
@@ -154,6 +156,8 @@ Runtime files live in `<YourProject>/Library/HybridLivePreview/`: `vite.log`, th
 - **The panel says "Vite offline".** Check `Library/HybridLivePreview/vite.log`. Make sure `node` and `npm` run in a new terminal and that port 5173 is free.
 - **The panel stays on "Waiting for Unity Play".** Make sure the scene has a camera tagged MainCamera and that the Console shows `[HybridLivePreview] Signaling connected`.
 - **Input does nothing.** Click the 3D view first so it has keyboard focus, set *Active Input Handling* to *Input System Package* or *Both*, and read input through the Input System.
+- **The preview freezes.** Unity stops rendering a Game view that is hidden behind another tab, and the Console warns about it. Keep the Game view visible, or switch *Capture* to *Mirror Camera*.
+- **Reflections or effects look different only in Chrome.** *Capture* is set to *Mirror Camera*; switch back to *Game View Output*.
 - **Chrome was not found.** The default browser opens instead; set the path with `EditorPrefs` key `RyanXuWei.HybridLivePreview.ChromePath` if Chrome is installed somewhere unusual.
 
 ## Why not Unity Render Streaming?

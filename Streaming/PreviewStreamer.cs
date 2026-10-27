@@ -11,15 +11,20 @@ using UnityEngine;
 
 namespace RyanXuWei.HybridLivePreview
 {
-    // Editor-only (asmdef define constraint UNITY_EDITOR): mirrors Camera.main into a WebRTC video
-    // track and answers browser offers relayed by the Vite signaling plugin. The track follows the
-    // viewer's viewport aspect, capped at width x height, the way a WebGL canvas follows the page.
+    // Editor-only (asmdef define constraint UNITY_EDITOR): streams the Game view (or, as a fallback, a
+    // mirror of Camera.main) as a WebRTC video track and answers browser offers relayed by the Vite
+    // signaling plugin. The track follows the viewer's viewport aspect, capped at width x height, the
+    // way a WebGL canvas follows the page.
     [AddComponentMenu("")]
     public sealed class PreviewStreamer : MonoBehaviour
     {
         public string signalingUrl = "ws://127.0.0.1:5173/signaling";
         public int width = 1280;
         public int height = 720;
+
+        // Copies the Game view's final image, so every camera, reflection and post effect matches it.
+        // Off: renders a separate mirror of Camera.main, which keeps working while the Game view is hidden.
+        public bool captureGameView = true;
 
         public static PreviewStreamer Instance { get; private set; }
         public string Status { get; private set; } = "idle";
@@ -43,6 +48,10 @@ namespace RyanXuWei.HybridLivePreview
 
         Camera source;
         Camera mirror;
+        RenderTexture frame;
+        RenderTexture grab;
+        float lastGrab;
+        bool warnedStall;
         VideoStreamTrack track;
         Vector2Int trackSize;
         ClientWebSocket socket;
@@ -59,24 +68,44 @@ namespace RyanXuWei.HybridLivePreview
         {
             StartCoroutine(WebRTC.Update());
 
-            source = Camera.main;
-            if (source == null)
+            if (captureGameView)
             {
-                Status = "no Camera.main";
-                Debug.LogError("[HybridLivePreview] No Camera.main found; nothing to stream.");
-                return;
+                Capture(new Vector2Int(width, height));
+                lastGrab = Time.realtimeSinceStartup;
+                StartCoroutine(GrabGameView());
+                Debug.Log($"[HybridLivePreview] Streaming the Game view, up to {width}x{height} ({SystemInfo.graphicsDeviceType}).");
             }
+            else
+            {
+                source = Camera.main;
+                if (source == null)
+                {
+                    Status = "no Camera.main";
+                    Debug.LogError("[HybridLivePreview] No Camera.main found; nothing to stream.");
+                    return;
+                }
 
-            // A mirror camera keeps the Game view intact; CaptureStreamTrack redirects its camera to a RenderTexture.
-            var go = new GameObject("[HybridLivePreview] Stream Camera");
-            go.transform.SetParent(transform, false);
-            mirror = go.AddComponent<Camera>();
-            mirror.CopyFrom(source);
-            Capture(new Vector2Int(width, height));
-
-            Debug.Log($"[HybridLivePreview] Streaming {source.name}, up to {width}x{height} ({SystemInfo.graphicsDeviceType}).");
+                // A mirror camera keeps the Game view intact; CaptureStreamTrack redirects its camera to a RenderTexture.
+                var go = new GameObject("[HybridLivePreview] Stream Camera");
+                go.transform.SetParent(transform, false);
+                mirror = go.AddComponent<Camera>();
+                mirror.CopyFrom(source);
+                Capture(new Vector2Int(width, height));
+                Debug.Log($"[HybridLivePreview] Streaming a mirror of {source.name}, up to {width}x{height} ({SystemInfo.graphicsDeviceType}).");
+            }
             cts = new CancellationTokenSource();
             _ = RunSignaling(cts.Token);
+        }
+
+        void Update()
+        {
+            // The Editor stops rendering a Game view hidden behind another tab, which freezes the stream.
+            if (!captureGameView || peers.Count == 0)
+                return;
+            var stalled = Time.realtimeSinceStartup - lastGrab > 2f;
+            if (stalled && !warnedStall)
+                Debug.LogWarning("[HybridLivePreview] The Game view is not rendering (hidden behind another tab?), so the stream is paused. Keep it visible, or switch Tools > Hybrid Live Preview > Capture to Mirror Camera.");
+            warnedStall = stalled;
         }
 
         void LateUpdate()
@@ -100,6 +129,10 @@ namespace RyanXuWei.HybridLivePreview
             }
             peers.Clear();
             track?.Dispose();
+            if (frame != null)
+                Destroy(frame);
+            if (grab != null)
+                Destroy(grab);
             socket?.Abort();
             if (Instance == this)
                 Instance = null;
@@ -117,11 +150,21 @@ namespace RyanXuWei.HybridLivePreview
 
         void Capture(Vector2Int size)
         {
-            if (mirror == null || size == trackSize)
+            if (size == trackSize || (!captureGameView && mirror == null))
                 return;
             var previous = track;
-            track = mirror.CaptureStreamTrack(size.x, size.y);
-            mirror.ResetAspect();
+            var previousFrame = frame;
+            if (captureGameView)
+            {
+                frame = new RenderTexture(size.x, size.y, 0, WebRTC.GetSupportedRenderTextureFormat(SystemInfo.graphicsDeviceType));
+                frame.Create();
+                track = new VideoStreamTrack(frame);
+            }
+            else
+            {
+                track = mirror.CaptureStreamTrack(size.x, size.y);
+                mirror.ResetAspect();
+            }
             trackSize = size;
 
             // Each peer only sends this one video track.
@@ -135,9 +178,37 @@ namespace RyanXuWei.HybridLivePreview
             {
                 var texture = previous.Texture;
                 previous.Dispose();
-                if (texture != null && texture != mirror.targetTexture)
+                if (texture != null && (mirror == null || texture != mirror.targetTexture))
                     Destroy(texture);
+                if (previousFrame != null && previousFrame != frame)
+                    Destroy(previousFrame);
                 Debug.Log($"[HybridLivePreview] Stream resized to {size.x}x{size.y} to match the viewer viewport.");
+            }
+        }
+
+        // Copies the finished Game view into the stream frame once everything (all cameras, UI, post) has rendered.
+        IEnumerator GrabGameView()
+        {
+            var endOfFrame = new WaitForEndOfFrame();
+            while (true)
+            {
+                yield return endOfFrame;
+                if (frame == null)
+                    continue;
+                if (grab == null || grab.width != Screen.width || grab.height != Screen.height)
+                {
+                    if (grab != null)
+                        Destroy(grab);
+                    grab = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+                    grab.Create();
+                }
+                ScreenCapture.CaptureScreenshotIntoRenderTexture(grab);
+                // The back buffer comes back upside down where UVs start at the top (D3D, Metal, Vulkan).
+                if (SystemInfo.graphicsUVStartsAtTop)
+                    Graphics.Blit(grab, frame, new Vector2(1f, -1f), new Vector2(0f, 1f));
+                else
+                    Graphics.Blit(grab, frame);
+                lastGrab = Time.realtimeSinceStartup;
             }
         }
 

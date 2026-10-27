@@ -31,6 +31,30 @@ namespace RyanXuWei.HybridLivePreview.Editor
             return true;
         }
 
+        const string CaptureGameViewItem = Root + "Capture/Game View Output";
+        const string CaptureMirrorItem = Root + "Capture/Mirror Camera (Fallback)";
+
+        // Applies from the next Play, so the choice is locked while playing.
+        [MenuItem(CaptureGameViewItem, priority = 10)]
+        static void UseGameViewCapture() => HlpSettings.CaptureGameView = true;
+
+        [MenuItem(CaptureGameViewItem, true)]
+        static bool UseGameViewCaptureValidate()
+        {
+            Menu.SetChecked(CaptureGameViewItem, HlpSettings.CaptureGameView);
+            return !EditorApplication.isPlaying;
+        }
+
+        [MenuItem(CaptureMirrorItem, priority = 11)]
+        static void UseMirrorCapture() => HlpSettings.CaptureGameView = false;
+
+        [MenuItem(CaptureMirrorItem, true)]
+        static bool UseMirrorCaptureValidate()
+        {
+            Menu.SetChecked(CaptureMirrorItem, !HlpSettings.CaptureGameView);
+            return !EditorApplication.isPlaying;
+        }
+
         [MenuItem(Root + "Open Preview In Chrome", priority = 20)]
         static void OpenPreview() => HlpProcesses.StartChrome(HlpSettings.PreviewUrl);
 

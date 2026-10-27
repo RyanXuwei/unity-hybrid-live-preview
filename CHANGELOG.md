@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-10-27
+
+### Changed
+- The stream now copies the Game view's final image instead of rendering a second camera, so planar reflections, post effects, camera stacks and screen-space UI look exactly as they do in the Game view. It also saves one camera render per frame. Keep the Game view visible while previewing; a hidden Game view pauses the stream and logs a warning.
+
+### Added
+- **Tools > Hybrid Live Preview > Capture** switches between **Game View Output** (default) and **Mirror Camera (Fallback)**, the previous behaviour, which keeps streaming while the Game view is hidden. The choice applies from the next Play.
+
 ## [0.5.0] - 2026-10-22
 
 ### Changed

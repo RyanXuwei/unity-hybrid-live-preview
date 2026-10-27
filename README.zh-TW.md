@@ -12,6 +12,7 @@
 
 - **一鍵啟動**：Play 時自動啟動 Vite 和專用的 Chrome 視窗；Stop 時全部關閉，並還原所有改過的設定。
 - **跟 WebGL Build 一樣的畫面**：串流解析度跟著瀏覽器視窗大小與比例，上限是 *Player Settings → WebGL → Default Canvas Width／Height*，並像 WebGL 範本的 canvas 一樣填滿視窗。Game view 也會鎖成相同解析度，`Screen`、相機比例和 UI 版面都一致。
+- **跟 Game view 完全相同的畫面**：串流直接複製 Game view 的最終畫面，反射、後製特效、相機堆疊和 Screen Space - Overlay 的 Canvas 在 Chrome 裡看起來都一樣。
 - **真正的 HTML UI**：網頁是由 Vite 提供的一般 HTML／CSS／JS，疊在 3D 畫面上，要用什麼框架都可以。
 - **輸入傳回 Unity**：在 3D 畫面上的滑鼠、筆、觸控、滾輪和鍵盤，會注入 Input System 的虛擬裝置，`Mouse.current`、`Keyboard.current`、`Touchscreen.current`、Input Actions 和 `InputSystemUIInputModule` 都收得到。`Cursor.lockState` 會變成瀏覽器的 Pointer Lock。
 - **不會進到 Build**：所有組件都只在 Editor 編譯，不會打包進任何 Player。
@@ -133,6 +134,7 @@ public class Spin : MonoBehaviour
 |---|---|
 | Auto Launch On Play | 開關整個預覽功能 |
 | Match Game View To Preview | Play 時把 Game view 鎖成串流解析度 |
+| Capture → Game View Output／Mirror Camera (Fallback) | **Game View Output**（預設）直接串流 Game view 的畫面。**Mirror Camera** 會用 `Camera.main` 再渲染一次，Game view 被遮住時也能繼續串流，但只替主相機計算的效果（例如平面反射）可能對不上。下次 Play 時生效 |
 | Open Preview In Chrome | 重新開啟預覽視窗 |
 | Install Web App | 立即複製範本並執行 `npm install` |
 | Stop Vite And Chrome | 關閉殘留的程序 |
@@ -143,7 +145,7 @@ public class Spin : MonoBehaviour
 | 資料夾 | 組件 | 用途 |
 |---|---|---|
 | `Editor/` | `RyanXuWei.HybridLivePreview.Editor`（Editor 平台） | Play／Stop 生命週期、Vite 與 Chrome 程序、Game view 解析度、網頁安裝與同步 |
-| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming`（僅 `UNITY_EDITOR`） | `PreviewStreamer`：鏡像相機、WebRTC 視訊軌、DataChannel |
+| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming`（僅 `UNITY_EDITOR`） | `PreviewStreamer`：擷取 Game view（或鏡像相機）、WebRTC 視訊軌、DataChannel |
 | `Input/` | `RyanXuWei.HybridLivePreview.Input`（`UNITY_EDITOR` + `ENABLE_INPUT_SYSTEM`） | `RemoteInput`：把瀏覽器輸入注入 Input System 虛擬裝置 |
 | `WebApp~/` | （Unity 不匯入） | Vite 範本、signaling 中繼、viewer、狀態浮動框 |
 
@@ -154,6 +156,8 @@ public class Spin : MonoBehaviour
 - **狀態框顯示「Vite offline」**：查看 `Library/HybridLivePreview/vite.log`，確認新開的終端機能執行 `node` 和 `npm`，且 5173 埠沒被佔用。
 - **一直顯示「Waiting for Unity Play」**：確認場景有 MainCamera 標籤的相機，Console 有出現 `[HybridLivePreview] Signaling connected`。
 - **輸入沒反應**：先點一下 3D 畫面取得鍵盤焦點；Active Input Handling 要是 *Input System Package* 或 *Both*；腳本要用 Input System 讀輸入。
+- **預覽畫面凍結**：Game view 被其他分頁蓋住時，Unity 會停止渲染它，Console 也會出現警告。請讓 Game view 保持可見，或把 *Capture* 切到 *Mirror Camera*。
+- **只有 Chrome 裡的反射或特效不對**：*Capture* 目前是 *Mirror Camera*，切回 *Game View Output* 即可。
 - **找不到 Chrome**：會改開預設瀏覽器。Chrome 裝在特殊位置時，可用 `EditorPrefs` 的 `RyanXuWei.HybridLivePreview.ChromePath` 指定路徑。
 
 ## 為什麼不用 Unity Render Streaming？

@@ -66,8 +66,11 @@ namespace RyanXuWei.HybridLivePreview.Editor
             streamer.signalingUrl = HlpSettings.SignalingUrl;
             streamer.width = HlpSettings.StreamWidth;
             streamer.height = HlpSettings.StreamHeight;
+            streamer.captureGameView = HlpSettings.CaptureGameView;
             if (HlpSettings.MatchGameView)
                 streamer.Resized += HlpGameView.Match;
+            else if (HlpSettings.CaptureGameView)
+                Debug.LogWarning("[HybridLivePreview] Match Game View To Preview is off, so the Game view image is scaled to the stream size.");
             go.SetActive(true);
 #if !ENABLE_INPUT_SYSTEM
             Debug.LogWarning("[HybridLivePreview] Browser input is not forwarded: set Player Settings > Active Input Handling to \"Input System Package\" or \"Both\".");

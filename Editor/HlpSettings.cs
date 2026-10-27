@@ -28,6 +28,13 @@ namespace RyanXuWei.HybridLivePreview.Editor
             set => EditorPrefs.SetBool(Prefix + "MatchGameView", value);
         }
 
+        // Streams the Game view's final image; off falls back to a mirror camera that renders Camera.main again.
+        public static bool CaptureGameView
+        {
+            get => EditorPrefs.GetBool(Prefix + "CaptureGameView", true);
+            set => EditorPrefs.SetBool(Prefix + "CaptureGameView", value);
+        }
+
         public static int Port
         {
             get => EditorPrefs.GetInt(Prefix + "Port", 5173);
