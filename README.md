@@ -195,11 +195,20 @@ public class Door : MonoBehaviour
 
 1. Builds the Unity WebGL player (the scenes in the build profile, or the open scene if it lists none).
 2. Builds `HybridPreviewWeb` with Vite on top of your `vite.config.js`.
-3. Merges both into `<YourProject>/Builds/HybridWebGL/<version>/` (the Player Settings version, so builds of different versions never overwrite each other): your `index.html`, `assets/`, and everything the Unity WebGL template produced next to it: `Build/`, `StreamingAssets/`, `TemplateData/` and any custom files the template ships (for example `environmentSetting.js`). Only the template's own `index.html` is replaced by your page. If that `index.html` does extra setup (loads scripts, registers a service worker), copy those lines into `HybridPreviewWeb/index.html`; the files they refer to are already in place.
+3. Merges both into `<YourProject>/Builds/HybridWebGL/<version>/` (the Player Settings version, so builds of different versions never overwrite each other): your `index.html`, `assets/`, and everything the Unity WebGL template produced next to it: `Build/`, `StreamingAssets/`, `TemplateData/` and any custom files the template ships (for example `environmentSetting.js`). The page itself is the WebGL template's `index.html` with your UI added (see *Web build page* below).
 
-In the built page `startHybridPreview` starts Unity in a canvas that takes the place of the preview video: same box, same resolution rule (window size in device pixels, capped at the WebGL Default Canvas size), `#app` on top, and `HybridBridge` connected through the jslib. Your UI code does not change between Play and the build. As in the preview, the canvas only takes keyboard input after it is clicked, so text fields in your UI keep working.
+Your UI code does not change between Play and the build: `HybridBridge` connects through the jslib, and `#app` sits on top of the Unity canvas. As in the preview, the canvas only takes keyboard input after it is clicked, so text fields in your UI keep working.
 
-**Preview WebGL Build** serves that folder at `http://127.0.0.1:4173/` and opens it in the preview Chrome. With Brotli or Gzip compression and *Decompression Fallback* off, your web server must send `Content-Encoding` for `Build/*.br` / `*.gz` (the preview server does); the page cannot be opened straight from disk. The WebGL template selected in Player Settings still builds as usual and its files are carried over; only its `index.html` is not, because your page replaces it.
+### Web build page
+
+**Tools → Hybrid Live Preview → Web Build Page** chooses how the final `index.html` is made:
+
+- **Inject Into WebGL Template** (default): the `index.html` of the WebGL template selected in Player Settings stays the page, so its canvas, loader, scripts, service worker and styling are exactly what you designed in that template. The package only adds what your UI needs: your scripts and styles into `<head>`, and the `#app` layer on top of the canvas at the end of `<body>`. Put `<!-- HLP:head -->` and `<!-- HLP:body -->` in the template if you want to choose those two spots; without them the content goes before `</head>` and `</body>`. The template needs no placeholder, and your `HybridPreviewWeb/index.html` is not copied over it.
+- **Replace WebGL Template Page**: `HybridPreviewWeb/index.html` becomes the page and `startHybridPreview` starts Unity in a canvas that takes the place of the preview video. If the template's `index.html` did extra setup, copy those lines into your `index.html`.
+
+The layer is `pointer-events: none` like in the preview, so clicks pass through to Unity except on elements that set `pointer-events: auto`.
+
+**Preview WebGL Build** serves that folder at `http://127.0.0.1:4173/` and opens it in the preview Chrome. With Brotli or Gzip compression and *Decompression Fallback* off, your web server must send `Content-Encoding` for `Build/*.br` / `*.gz` (the preview server does); the page cannot be opened straight from disk.
 
 ## Menu
 

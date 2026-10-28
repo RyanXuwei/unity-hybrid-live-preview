@@ -43,6 +43,14 @@ namespace RyanXuWei.HybridLivePreview.Editor
             set => EditorPrefs.SetString(Prefix + "WebGLOutput", value);
         }
 
+        // Build WebGL keeps the WebGL template's own index.html and injects the UI layer into it (default); off
+        // replaces that page with HybridPreviewWeb's index.html.
+        public static bool WebGLInjectTemplate
+        {
+            get => EditorPrefs.GetBool(Prefix + "WebGLInjectTemplate", true);
+            set => EditorPrefs.SetBool(Prefix + "WebGLInjectTemplate", value);
+        }
+
         // Builds of different versions sit side by side instead of replacing each other.
         public static string WebGLOutputFor(string version)
         {

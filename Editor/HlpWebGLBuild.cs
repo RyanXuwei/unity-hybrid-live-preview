@@ -31,6 +31,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
         {
             public string playerDir;
             public string outDir;
+            public string mode;
             public Page page;
         }
 
@@ -104,7 +105,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
             var page = DescribePlayer();
             if (page == null)
                 return;
-            File.WriteAllText(ManifestPath, JsonUtility.ToJson(new Manifest { playerDir = PlayerDir, outDir = outDir, page = page }, true));
+            File.WriteAllText(ManifestPath, JsonUtility.ToJson(new Manifest { playerDir = PlayerDir, outDir = outDir, mode = HlpSettings.WebGLInjectTemplate ? "template" : "replace", page = page }, true));
             if (!RunViteBuild())
                 return;
 

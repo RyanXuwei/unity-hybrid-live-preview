@@ -144,9 +144,12 @@ A working example in this style: an activation menu that toggles the children of
   `Content-Encoding` for `Build/*.br` / `*.gz`.
 - The WebGL template chosen in Player Settings still builds, and everything it produced is copied next to
   the page (`Build/`, `StreamingAssets/`, `TemplateData/`, custom files such as `environmentSetting.js`),
-  except its `index.html`: the page in `HybridPreviewWeb` is the page. If the template's `index.html` does
-  extra setup (extra `<script src>` tags, service worker registration), put those lines in
-  `HybridPreviewWeb/index.html`; the files they load are already in the output.
+  except its `index.html`.
+- **Tools > Hybrid Live Preview > Web Build Page** picks how the final `index.html` is made. *Inject Into
+  WebGL Template* (default) keeps the template's `index.html` and adds your scripts and styles to `<head>` and
+  your `#app` layer at the end of `<body>` (optional markers `<!-- HLP:head -->` / `<!-- HLP:body -->` in the
+  template choose the spot). *Replace WebGL Template Page* makes `HybridPreviewWeb/index.html` the page, so
+  any setup the template did must be copied there. Your UI code is the same in both.
 
 ## Troubleshooting
 

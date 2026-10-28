@@ -195,11 +195,20 @@ public class Door : MonoBehaviour
 
 1. Build Unity WebGL Player（使用 Build Profile 列出的場景；沒有列的話就用目前開著的場景）。
 2. 以你的 `vite.config.js` 為基礎，用 Vite Build `HybridPreviewWeb`。
-3. 兩者合併到 `<專案>/Builds/HybridWebGL/<版號>/`（版號取自 Player Settings，不同版號的 Build 不會互相覆蓋）：你的 `index.html`、`assets/`，加上 Unity WebGL 範本產出的其他檔案：`Build/`、`StreamingAssets/`、`TemplateData/`，以及範本自帶的自訂檔案（例如 `environmentSetting.js`）。只有範本自己的 `index.html` 會被你的頁面取代；如果那份 `index.html` 有額外的初始化（載入腳本、註冊 Service Worker 等），請把那幾行搬進 `HybridPreviewWeb/index.html`，它們要用的檔案已經在成品裡了。
+3. 兩者合併到 `<專案>/Builds/HybridWebGL/<版號>/`（版號取自 Player Settings，不同版號的 Build 不會互相覆蓋）：你的 `index.html`、`assets/`，加上 Unity WebGL 範本產出的其他檔案：`Build/`、`StreamingAssets/`、`TemplateData/`，以及範本自帶的自訂檔案（例如 `environmentSetting.js`）。頁面本身是 WebGL 範本的 `index.html` 加上你的 UI（見下方「Build 頁面」）。
 
-Build 出來的頁面裡，`startHybridPreview` 會改成在 canvas 裡啟動 Unity，canvas 取代預覽時的 video：位置大小相同、解析度規則相同（視窗的實體像素，上限是 WebGL Default Canvas 尺寸），`#app` 一樣疊在上面，`HybridBridge` 改走 jslib。從 Play 到正式 Build，你的 UI 程式碼完全不用改。和預覽一樣，canvas 要先點一下才會接收鍵盤，所以 UI 裡的輸入框照常可用。
+從 Play 到正式 Build，你的 UI 程式碼完全不用改：`HybridBridge` 改走 jslib，`#app` 疊在 Unity canvas 上面。和預覽一樣，canvas 要先點一下才會接收鍵盤，所以 UI 裡的輸入框照常可用。
 
-**Preview WebGL Build** 會在 `http://127.0.0.1:4173/` 架起這個資料夾，並用預覽用的 Chrome 開啟。如果用 Brotli 或 Gzip 壓縮且沒開 *Decompression Fallback*，網站伺服器必須替 `Build/*.br`、`*.gz` 加上 `Content-Encoding` 標頭（預覽伺服器會自動處理），也不能直接從硬碟開 index.html。Player Settings 選的 WebGL 範本照常 Build，它的檔案都會帶過來，只有它的 `index.html` 不會，因為頁面就是你的 H5 頁面。
+### Build 頁面
+
+**Tools → Hybrid Live Preview → Web Build Page** 決定最終 `index.html` 怎麼產生：
+
+- **Inject Into WebGL Template**（預設）：Player Settings 選的 WebGL 範本的 `index.html` 維持原樣當作頁面，範本的 canvas、載入器、腳本、Service Worker 與樣式都照你在範本裡設計的。套件只補上 UI 需要的東西：你的腳本與樣式加進 `<head>`，`#app` 圖層加到 `<body>` 結尾、疊在 Unity canvas 上面。想自己指定這兩個位置，可以在範本放 `<!-- HLP:head -->` 與 `<!-- HLP:body -->`；沒放的話就插在 `</head>` 與 `</body>` 之前。範本不需要預留任何佔位，你的 `HybridPreviewWeb/index.html` 也不會覆蓋它。
+- **Replace WebGL Template Page**：由 `HybridPreviewWeb/index.html` 當頁面，`startHybridPreview` 在取代預覽 video 的 canvas 裡啟動 Unity。如果範本的 `index.html` 有額外初始化，請把那幾行搬進你的 `index.html`。
+
+這個圖層和預覽時一樣是 `pointer-events: none`，點擊會穿透到 Unity，只有設了 `pointer-events: auto` 的元素會接收點擊。
+
+**Preview WebGL Build** 會在 `http://127.0.0.1:4173/` 架起這個資料夾，並用預覽用的 Chrome 開啟。如果用 Brotli 或 Gzip 壓縮且沒開 *Decompression Fallback*，網站伺服器必須替 `Build/*.br`、`*.gz` 加上 `Content-Encoding` 標頭（預覽伺服器會自動處理），也不能直接從硬碟開 index.html。
 
 ## 選單
 

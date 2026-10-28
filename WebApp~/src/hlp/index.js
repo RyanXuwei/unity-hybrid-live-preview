@@ -12,7 +12,8 @@ export { bridge };
 // In the final build (Tools > Hybrid Live Preview > Build WebGL) Unity itself runs in a canvas instead.
 export function startHybridPreview(video, { panel = true } = {}) {
   if (typeof __HLP_WEBGL_BUILD__ !== 'undefined') {
-    const player = startUnityCanvas(video, __HLP_WEBGL_BUILD__);
+    const build = __HLP_WEBGL_BUILD__;
+    const player = build.mode === 'replace' ? startUnityCanvas(video, build) : startInTemplate();
     window.__hlp = player;
     return player;
   }
@@ -20,4 +21,16 @@ export function startHybridPreview(video, { panel = true } = {}) {
   const state = startViewer(video, { onChange: (s) => update?.(s) });
   window.__hlp = state;
   return state;
+}
+
+// Template mode: the WebGL template starts Unity and owns the canvas. The page only keeps the keyboard with the
+// canvas once it is clicked (text fields in your UI keep theirs) and lets HybridBridge talk to the jslib.
+function startInTemplate() {
+  window.__hlpPage = true;
+  document.addEventListener(
+    'pointerdown',
+    (e) => e.target.closest?.('canvas')?.focus({ preventScroll: true }),
+    true,
+  );
+  return { mode: 'template' };
 }

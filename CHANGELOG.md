@@ -2,6 +2,11 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.9.0] - 2026-10-28
+
+### Added
+- Build WebGL now injects your UI into the Unity WebGL template instead of replacing its `index.html`. The template's canvas, loader, scripts and styling stay as designed; your scripts and styles go into `<head>` and the `#app` layer on top of the canvas at the end of `<body>` (optional `<!-- HLP:head -->` / `<!-- HLP:body -->` markers pick the spot). New menu **Web Build Page** switches between *Inject Into WebGL Template* (default) and *Replace WebGL Template Page* (the 0.8.x behaviour).
+
 ## [0.8.2] - 2026-10-28
 
 ### Fixed
