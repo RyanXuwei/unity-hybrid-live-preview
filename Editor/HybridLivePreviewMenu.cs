@@ -69,13 +69,13 @@ namespace RyanXuWei.HybridLivePreview.Editor
             HlpProcesses.StopBuildPreview();
         }
 
-        [MenuItem(Root + "Build WebGL (Unity + Web UI)", priority = 30)]
+        [MenuItem(Root + "Build WebGL (Unity + Web UI)", priority = 100)]
         static void BuildWebGL() => HlpWebGLBuild.Build();
 
         const string InjectTemplateItem = Root + "Web Build Page/Inject Into WebGL Template";
         const string ReplaceTemplateItem = Root + "Web Build Page/Replace WebGL Template Page";
 
-        [MenuItem(InjectTemplateItem, priority = 32)]
+        [MenuItem(InjectTemplateItem, priority = 120)]
         static void UseInjectTemplate() => HlpSettings.WebGLInjectTemplate = true;
 
         [MenuItem(InjectTemplateItem, true)]
@@ -85,7 +85,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
             return !EditorApplication.isPlaying;
         }
 
-        [MenuItem(ReplaceTemplateItem, priority = 33)]
+        [MenuItem(ReplaceTemplateItem, priority = 121)]
         static void UseReplaceTemplate() => HlpSettings.WebGLInjectTemplate = false;
 
         [MenuItem(ReplaceTemplateItem, true)]
@@ -95,7 +95,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
             return !EditorApplication.isPlaying;
         }
 
-        [MenuItem(Root + "Preview WebGL Build", priority = 31)]
+        [MenuItem(Root + "Preview WebGL Build", priority = 101)]
         static void PreviewWebGL() => HlpWebGLBuild.Preview();
 
         [MenuItem(Root + "Preview WebGL Build", true)]
