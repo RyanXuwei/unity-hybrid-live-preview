@@ -18,8 +18,10 @@ namespace RyanXuWei.HybridLivePreview.Editor
         const double PreviewTimeoutSeconds = 30;
 
         static string WorkDir => Path.Combine(HlpWebApp.ProjectRoot, "Library", "HybridLivePreview");
-        // Unity refuses to build into Library/, so the intermediate player sits next to the final site.
-        static string PlayerDir => Path.Combine(HlpWebApp.ProjectRoot, "Builds", "HybridWebGL-UnityPlayer");
+        // Unity refuses to build into Library/, so the intermediate player goes to the OS temp folder (one per
+        // project) and is deleted once it has been merged; only the final site is left in the project.
+        static string PlayerDir => Path.Combine(Path.GetTempPath(), "HybridLivePreview",
+            Math.Abs(HlpWebApp.ProjectRoot.ToLowerInvariant().GetHashCode()).ToString("x"), "WebGLPlayer");
         static string ManifestPath => Path.Combine(WorkDir, "webgl-build.json");
         static string LogPath => Path.Combine(WorkDir, "vite-build.log");
 
@@ -47,7 +49,17 @@ namespace RyanXuWei.HybridLivePreview.Editor
             public int maxHeight;
         }
 
-        public static bool HasBuild => File.Exists(ManifestPath) && File.Exists(Path.Combine(HlpSettings.WebGLOutputPath, "index.html"));
+        // The last build, whatever its version.
+        public static bool HasBuild
+        {
+            get
+            {
+                if (!File.Exists(ManifestPath))
+                    return false;
+                var manifest = JsonUtility.FromJson<Manifest>(File.ReadAllText(ManifestPath));
+                return manifest != null && !string.IsNullOrEmpty(manifest.outDir) && File.Exists(Path.Combine(manifest.outDir, "index.html"));
+            }
+        }
 
         public static void Build()
         {
@@ -72,7 +84,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
             if (!HlpWebApp.EnsureInstalled())
                 return;
 
-            var outDir = HlpSettings.WebGLOutputPath;
+            var outDir = HlpSettings.WebGLOutputFor(PlayerSettings.bundleVersion);
             if (Directory.Exists(PlayerDir))
                 Directory.Delete(PlayerDir, true);
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
@@ -96,6 +108,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
             if (!RunViteBuild())
                 return;
 
+            DeletePlayer();
             Debug.Log($"[HybridLivePreview] WebGL build ready: {outDir}. Open it with Tools > Hybrid Live Preview > Preview WebGL Build.");
             WarnAboutCompression();
             EditorUtility.RevealInFinder(Path.Combine(outDir, "index.html"));
@@ -133,6 +146,20 @@ namespace RyanXuWei.HybridLivePreview.Editor
             }
 
             EditorApplication.update += Tick;
+        }
+
+        // The merged site holds its own copy of the player files.
+        static void DeletePlayer()
+        {
+            try
+            {
+                if (Directory.Exists(PlayerDir))
+                    Directory.Delete(PlayerDir, true);
+            }
+            catch (IOException e)
+            {
+                Debug.LogWarning($"[HybridLivePreview] Could not delete the intermediate player {PlayerDir}: {e.Message}");
+            }
         }
 
         static string[] Scenes()

@@ -31,7 +31,7 @@ draws the UI on top of it. The two halves talk only through **HybridBridge**.
 | `HybridPreviewWeb/src/hlp/` | **package** | Never edit. Overwritten from the package on every Play and build. |
 | `Assets/**` | project | Unity scripts. Use `HybridBridge` to talk to the page. |
 | `Packages/com.ryanxuwei.hybrid-live-preview` | **package** | Read-only (installed from git). Change it in the package repo instead. |
-| `Library/HybridLivePreview/`, `Builds/HybridWebGL/`, `Builds/HybridWebGL-UnityPlayer/` | generated | Logs, Chrome profile, final site, intermediate Unity player. Do not edit or commit. |
+| `Library/HybridLivePreview/`, `Builds/HybridWebGL/<version>/` | generated | Logs, Chrome profile, final site. Do not edit or commit. |
 
 Commit `HybridPreviewWeb/` with the project, excluding `node_modules/`.
 
@@ -138,7 +138,7 @@ A working example in this style: an activation menu that toggles the children of
 
 - **Build WebGL (Unity + Web UI)**: builds the Unity player (scenes from the build profile, or the open
   scene), runs `vite build` with `src/hlp/vite.build.config.js` (your `vite.config.js` merged in), and
-  writes the deployable site to `<project>/Builds/HybridWebGL/`.
+  writes the deployable site to `<project>/Builds/HybridWebGL/<version>/` (the Player Settings version).
 - **Preview WebGL Build**: serves that folder at `http://127.0.0.1:4173/`.
 - With Brotli/Gzip compression and *Decompression Fallback* off, the web server must send
   `Content-Encoding` for `Build/*.br` / `*.gz`.

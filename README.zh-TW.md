@@ -39,7 +39,7 @@
 - 產品名稱、公司、版本和 canvas 上限，都讀取該專案的 Player Settings。
 - Unity Build 的檔名（Build 名稱、*Name Files As Hashes*、Brotli／Gzip／不壓縮）在每次 Build 後自動判斷，不寫死。
 - Build 時使用 Build Profile 列出的場景；沒有列的話就用目前開著的場景。
-- 暫存檔放在 `Library/HybridLivePreview/`，成品放在 `Builds/HybridWebGL/`，都在專案內。
+- 暫存檔放在 `Library/HybridLivePreview/`，成品放在 `Builds/HybridWebGL/<版號>/`，都在專案內。
 
 範本一開始的兩樣東西請保留：`index.html` 裡的 `<video id="stream">`，以及 `src/main.js` 裡的 `startHybridPreview(...)` 呼叫。頁面其他部分都由你自由安排。
 
@@ -195,7 +195,7 @@ public class Door : MonoBehaviour
 
 1. Build Unity WebGL Player（使用 Build Profile 列出的場景；沒有列的話就用目前開著的場景）。
 2. 以你的 `vite.config.js` 為基礎，用 Vite Build `HybridPreviewWeb`。
-3. 兩者合併到 `<專案>/Builds/HybridWebGL/`：你的 `index.html`、`assets/`，加上 Unity 的 `Build/`（和 `StreamingAssets/`）。
+3. 兩者合併到 `<專案>/Builds/HybridWebGL/<版號>/`（版號取自 Player Settings，不同版號的 Build 不會互相覆蓋）：你的 `index.html`、`assets/`，加上 Unity 的 `Build/`（和 `StreamingAssets/`）。
 
 Build 出來的頁面裡，`startHybridPreview` 會改成在 canvas 裡啟動 Unity，canvas 取代預覽時的 video：位置大小相同、解析度規則相同（視窗的實體像素，上限是 WebGL Default Canvas 尺寸），`#app` 一樣疊在上面，`HybridBridge` 改走 jslib。從 Play 到正式 Build，你的 UI 程式碼完全不用改。和預覽一樣，canvas 要先點一下才會接收鍵盤，所以 UI 裡的輸入框照常可用。
 
@@ -211,7 +211,7 @@ Build 出來的頁面裡，`startHybridPreview` 會改成在 canvas 裡啟動 Un
 | Match Game View To Preview | Play 時把 Game view 鎖成串流解析度 |
 | Capture → Game View Output／Mirror Camera (Fallback) | **Game View Output**（預設）直接串流 Game view 的畫面。**Mirror Camera** 會用 `Camera.main` 再渲染一次，Game view 被遮住時也能繼續串流，但只替主相機計算的效果（例如平面反射）可能對不上。下次 Play 時生效 |
 | Open Preview In Chrome | 重新開啟預覽視窗 |
-| Build WebGL (Unity + Web UI) | Build Unity Player 和網頁，合併到 `Builds/HybridWebGL` |
+| Build WebGL (Unity + Web UI) | Build Unity Player 和網頁，合併到 `Builds/HybridWebGL/<版號>` |
 | Preview WebGL Build | 在 `http://127.0.0.1:4173/` 架起上一次的成品，並用 Chrome 開啟 |
 | Install Web App | 立即複製範本並執行 `npm install` |
 | Stop Vite And Chrome | 關閉殘留的程序 |

@@ -2,6 +2,12 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.8.1] - 2026-10-28
+
+### Changed
+- Build WebGL now leaves only the final site in the project. The intermediate Unity player is built in the OS temp folder and deleted after the merge.
+- The final site goes to `Builds/HybridWebGL/<version>/`, using the Player Settings version, so builds of different versions never overwrite each other.
+
 ## [0.8.0] - 2026-10-28
 
 ### Added

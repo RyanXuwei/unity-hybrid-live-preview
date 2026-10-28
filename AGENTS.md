@@ -32,7 +32,7 @@ This repository is the Unity package `com.ryanxuwei.hybrid-live-preview`. Two gu
    `src/hlp/bridge.js` (global `window.HybridBridge`), C# side `HybridBridge` + `PreviewBridgeTransport`.
    In WebGL builds `HybridBridge.jslib` reuses an existing `window.HybridBridge` or creates an identical one.
    Keep `bridge.js` and the jslib core behaviourally identical.
-5. **Build WebGL**: `HlpWebGLBuild` builds the player into `Builds/HybridWebGL-UnityPlayer` (Unity refuses `Library/`), writes
+5. **Build WebGL**: `HlpWebGLBuild` builds the player into a temp folder (Unity refuses `Library/`; it is deleted after the merge), writes
    `Library/HybridLivePreview/webgl-build.json`, runs `vite build --config src/hlp/vite.build.config.js`;
    `webgl-build-plugin.js` defines `__HLP_WEBGL_BUILD__` and copies `Build/` + `StreamingAssets/` into the
    output. In that bundle `startHybridPreview` calls `startUnityCanvas` (`src/hlp/webgl.js`).

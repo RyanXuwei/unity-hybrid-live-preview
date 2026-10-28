@@ -39,7 +39,7 @@ Nothing in the package is tied to a particular project, and there is nothing to 
 - Product name, company, version and the canvas size cap are read from that project's Player Settings.
 - The Unity build's file names (build name, *Name Files As Hashes*, Brotli/Gzip/none) are detected after each build, not hard-coded.
 - Builds use the scenes in the build profile, or the open scene when it lists none.
-- Working files go to `Library/HybridLivePreview/`, the final site to `Builds/HybridWebGL/`, both inside the project.
+- Working files go to `Library/HybridLivePreview/`, the final site to `Builds/HybridWebGL/<version>/`, both inside the project.
 
 Keep the two things the template starts with: the `<video id="stream">` element in `index.html` and the `startHybridPreview(...)` call in `src/main.js`. Everything else in the page is yours.
 
@@ -195,7 +195,7 @@ public class Door : MonoBehaviour
 
 1. Builds the Unity WebGL player (the scenes in the build profile, or the open scene if it lists none).
 2. Builds `HybridPreviewWeb` with Vite on top of your `vite.config.js`.
-3. Merges both into `<YourProject>/Builds/HybridWebGL/`: your `index.html`, `assets/`, and Unity's `Build/` (and `StreamingAssets/`).
+3. Merges both into `<YourProject>/Builds/HybridWebGL/<version>/` (the Player Settings version, so builds of different versions never overwrite each other): your `index.html`, `assets/`, and Unity's `Build/` (and `StreamingAssets/`).
 
 In the built page `startHybridPreview` starts Unity in a canvas that takes the place of the preview video: same box, same resolution rule (window size in device pixels, capped at the WebGL Default Canvas size), `#app` on top, and `HybridBridge` connected through the jslib. Your UI code does not change between Play and the build. As in the preview, the canvas only takes keyboard input after it is clicked, so text fields in your UI keep working.
 
@@ -211,7 +211,7 @@ In the built page `startHybridPreview` starts Unity in a canvas that takes the p
 | Match Game View To Preview | Locks the Game view to the stream resolution during Play. |
 | Capture → Game View Output / Mirror Camera (Fallback) | **Game View Output** (default) streams exactly what the Game view shows. **Mirror Camera** renders `Camera.main` a second time and keeps streaming while the Game view is hidden, but effects computed only for the main camera, such as planar reflections, may not match. Applies from the next Play. |
 | Open Preview In Chrome | Reopens the preview window. |
-| Build WebGL (Unity + Web UI) | Builds the Unity player and the web page and merges them into `Builds/HybridWebGL`. |
+| Build WebGL (Unity + Web UI) | Builds the Unity player and the web page and merges them into `Builds/HybridWebGL/<version>`. |
 | Preview WebGL Build | Serves the last build at `http://127.0.0.1:4173/` and opens it in Chrome. |
 | Install Web App | Copies the template and runs `npm install` now. |
 | Stop Vite And Chrome | Closes leftover processes. |
