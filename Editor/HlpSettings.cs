@@ -35,6 +35,15 @@ namespace RyanXuWei.HybridLivePreview.Editor
             set => EditorPrefs.SetBool(Prefix + "CaptureGameView", value);
         }
 
+        // Where Build WebGL puts the final site; a relative path starts at the project folder.
+        public static string WebGLOutput
+        {
+            get => EditorPrefs.GetString(Prefix + "WebGLOutput", "Builds/HybridWebGL");
+            set => EditorPrefs.SetString(Prefix + "WebGLOutput", value);
+        }
+
+        public static string WebGLOutputPath => Path.GetFullPath(Path.Combine(HlpWebApp.ProjectRoot, WebGLOutput));
+
         public static int Port
         {
             get => EditorPrefs.GetInt(Prefix + "Port", 5173);

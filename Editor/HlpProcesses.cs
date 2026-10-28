@@ -13,9 +13,11 @@ namespace RyanXuWei.HybridLivePreview.Editor
     {
         const string ViteName = "vite";
         const string ChromeName = "chrome";
+        const string BuildPreviewName = "build-preview";
 
         static string WorkDir => Path.Combine(HlpWebApp.ProjectRoot, "Library", "HybridLivePreview");
         public static string ViteLogPath => Path.Combine(WorkDir, "vite.log");
+        public static string BuildPreviewLogPath => Path.Combine(WorkDir, "build-preview.log");
 
         public static bool IsPortOpen(int port)
         {
@@ -69,8 +71,19 @@ namespace RyanXuWei.HybridLivePreview.Editor
             Debug.Log($"[HybridLivePreview] Chrome opened (pid {process.Id}): {url}");
         }
 
+        // Serves the merged WebGL build (see HlpWebGLBuild) with `vite preview`.
+        public static void StartBuildPreview(int port)
+        {
+            StopBuildPreview();
+            Directory.CreateDirectory(WorkDir);
+            var process = Shell($"npx vite preview --config src/hlp/vite.build.config.js --port {port} --strictPort > \"{BuildPreviewLogPath}\" 2>&1", HlpWebApp.WebRoot, redirect: false);
+            WritePid(BuildPreviewName, process.Id);
+            Debug.Log($"[HybridLivePreview] Build preview starting (pid {process.Id}) on port {port}. Log: {BuildPreviewLogPath}");
+        }
+
         public static void StopChrome() => Kill(ChromeName, "Chrome", graceful: true);
         public static void StopVite() => Kill(ViteName, "Vite", graceful: false);
+        public static void StopBuildPreview() => Kill(BuildPreviewName, "build preview", graceful: false);
 
         static string PidPath(string name) => Path.Combine(WorkDir, name + ".pid");
 

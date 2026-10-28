@@ -1,0 +1,16 @@
+{
+    "name": "RyanXuWei.HybridLivePreview.WebGL",
+    "rootNamespace": "RyanXuWei.HybridLivePreview",
+    "references": [],
+    "includePlatforms": [
+        "WebGL"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

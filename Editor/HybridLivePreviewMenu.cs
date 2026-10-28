@@ -66,7 +66,17 @@ namespace RyanXuWei.HybridLivePreview.Editor
         {
             HlpProcesses.StopChrome();
             HlpProcesses.StopVite();
+            HlpProcesses.StopBuildPreview();
         }
+
+        [MenuItem(Root + "Build WebGL (Unity + Web UI)", priority = 30)]
+        static void BuildWebGL() => HlpWebGLBuild.Build();
+
+        [MenuItem(Root + "Preview WebGL Build", priority = 31)]
+        static void PreviewWebGL() => HlpWebGLBuild.Preview();
+
+        [MenuItem(Root + "Preview WebGL Build", true)]
+        static bool PreviewWebGLValidate() => HlpWebGLBuild.HasBuild && !EditorApplication.isPlaying;
 
         [MenuItem(Root + "About", priority = 40)]
         static void About()

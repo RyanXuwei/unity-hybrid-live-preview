@@ -16,6 +16,7 @@ namespace RyanXuWei.HybridLivePreview.Editor
             {
                 HlpProcesses.StopChrome();
                 HlpProcesses.StopVite();
+                HlpProcesses.StopBuildPreview();
             };
         }
 

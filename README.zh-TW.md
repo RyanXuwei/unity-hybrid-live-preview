@@ -16,7 +16,8 @@
 - **真正的 HTML UI**：網頁是由 Vite 提供的一般 HTML／CSS／JS，疊在 3D 畫面上，要用什麼框架都可以。
 - **輸入傳回 Unity**：在 3D 畫面上的滑鼠、筆、觸控、滾輪和鍵盤，會注入 Input System 的虛擬裝置，`Mouse.current`、`Keyboard.current`、`Touchscreen.current`、Input Actions 和 `InputSystemUIInputModule` 都收得到。`Cursor.lockState` 會變成瀏覽器的 Pointer Lock。
 - **單一資料通道**：`HybridBridge`（C#）和 `window.HybridBridge`（網頁）互傳帶類型的 JSON 訊息，同一套 API 在預覽和 WebGL Build（透過 jslib）都能用。
-- **不會進到 Build**：除了小小的橋接組件，其他都只在 Editor 編譯。
+- **一鍵產出成品**：*Build WebGL* 會 Build Unity Player 和你的 Vite 網頁並合併，成品的行為和預覽一致。
+- **不會進到 Build**：除了小小的橋接組件和 WebGL 頁面組件，其他都只在 Editor 編譯。
 
 ## 需求
 
@@ -26,8 +27,21 @@
 | Active Input Handling | *Input System Package* 或 *Both*（輸入轉發需要） |
 | Node.js | 18 以上，`npm` 要在 PATH 裡 |
 | 瀏覽器 | Google Chrome |
+| Unity 模組 | *WebGL Build Support*（只有 **Build WebGL** 需要） |
 
 套件依賴 `com.unity.webrtc` 3.0.0 和 `com.unity.inputsystem` 1.11.2 以上，Unity 會自動安裝。
+
+### 任何專案都能直接用
+
+套件裡沒有任何綁定特定專案的內容，換專案時不需要搬移、改名或設定任何東西：
+
+- 第一次 Play 或 Build 時，會自動在專案根目錄建立 `HybridPreviewWeb/`。套件只維護 `src/hlp/`，不會動到你自己的檔案。
+- 產品名稱、公司、版本和 canvas 上限，都讀取該專案的 Player Settings。
+- Unity Build 的檔名（Build 名稱、*Name Files As Hashes*、Brotli／Gzip／不壓縮）在每次 Build 後自動判斷，不寫死。
+- Build 時使用 Build Profile 列出的場景；沒有列的話就用目前開著的場景。
+- 暫存檔放在 `Library/HybridLivePreview/`，成品放在 `Builds/HybridWebGL/`，都在專案內。
+
+範本一開始的兩樣東西請保留：`index.html` 裡的 `<video id="stream">`，以及 `src/main.js` 裡的 `startHybridPreview(...)` 呼叫。頁面其他部分都由你自由安排。
 
 ## 安裝
 
@@ -43,11 +57,11 @@ https://github.com/RyanXuwei/unity-hybrid-live-preview.git#main
 "com.ryanxuwei.hybrid-live-preview": "https://github.com/RyanXuwei/unity-hybrid-live-preview.git#main"
 ```
 
-要固定版本，把 `#main` 換成 tag，例如 `#v0.5.0`。
+要固定版本，把 `#main` 換成 tag，例如 `#v0.8.0`。
 
 ## 快速開始
 
-1. 開啟有 **MainCamera** 標籤相機的場景，按 **Play**。
+1. 開啟場景，按 **Play**。（只有 *Mirror Camera* 擷取模式才需要 **MainCamera** 標籤的相機。）
 2. 第一次會把網頁範本複製到 `<專案>/HybridPreviewWeb/` 並執行 `npm install`（約一分鐘）。
 3. Chrome 開啟 `http://127.0.0.1:5173/`，角落的狀態小標籤變綠並顯示 **LIVE** 和串流解析度。
 4. 先點一下 3D 畫面取得焦點，之後就能像在 WebGL Build 裡一樣用滑鼠和鍵盤操作。
@@ -175,6 +189,18 @@ public class Door : MonoBehaviour
 - 沒有人接收的訊息會被丟棄，Unity 對每種未知類型只會警告一次。請在 `OnEnable` 訂閱；網頁載入時主動向 Unity 要需要的狀態（例如 `HybridBridge.send('getState')`），不要依賴網頁出現之前送出的訊息。
 - 橋接組件 `RyanXuWei.HybridLivePreview.Bridge` 會自動被專案參考，也是本套件唯一會打包進 Player 的部分。
 
+## 產出最終 WebGL 網站
+
+**Tools → Hybrid Live Preview → Build WebGL (Unity + Web UI)** 一鍵產出可部署的成品：
+
+1. Build Unity WebGL Player（使用 Build Profile 列出的場景；沒有列的話就用目前開著的場景）。
+2. 以你的 `vite.config.js` 為基礎，用 Vite Build `HybridPreviewWeb`。
+3. 兩者合併到 `<專案>/Builds/HybridWebGL/`：你的 `index.html`、`assets/`，加上 Unity 的 `Build/`（和 `StreamingAssets/`）。
+
+Build 出來的頁面裡，`startHybridPreview` 會改成在 canvas 裡啟動 Unity，canvas 取代預覽時的 video：位置大小相同、解析度規則相同（視窗的實體像素，上限是 WebGL Default Canvas 尺寸），`#app` 一樣疊在上面，`HybridBridge` 改走 jslib。從 Play 到正式 Build，你的 UI 程式碼完全不用改。和預覽一樣，canvas 要先點一下才會接收鍵盤，所以 UI 裡的輸入框照常可用。
+
+**Preview WebGL Build** 會在 `http://127.0.0.1:4173/` 架起這個資料夾，並用預覽用的 Chrome 開啟。如果用 Brotli 或 Gzip 壓縮且沒開 *Decompression Fallback*，網站伺服器必須替 `Build/*.br`、`*.gz` 加上 `Content-Encoding` 標頭（預覽伺服器會自動處理），也不能直接從硬碟開 index.html。這個流程不會用到 Player Settings 選的 WebGL 範本，因為頁面就是你的 H5 頁面。
+
 ## 選單
 
 **Tools → Hybrid Live Preview**
@@ -185,6 +211,8 @@ public class Door : MonoBehaviour
 | Match Game View To Preview | Play 時把 Game view 鎖成串流解析度 |
 | Capture → Game View Output／Mirror Camera (Fallback) | **Game View Output**（預設）直接串流 Game view 的畫面。**Mirror Camera** 會用 `Camera.main` 再渲染一次，Game view 被遮住時也能繼續串流，但只替主相機計算的效果（例如平面反射）可能對不上。下次 Play 時生效 |
 | Open Preview In Chrome | 重新開啟預覽視窗 |
+| Build WebGL (Unity + Web UI) | Build Unity Player 和網頁，合併到 `Builds/HybridWebGL` |
+| Preview WebGL Build | 在 `http://127.0.0.1:4173/` 架起上一次的成品，並用 Chrome 開啟 |
 | Install Web App | 立即複製範本並執行 `npm install` |
 | Stop Vite And Chrome | 關閉殘留的程序 |
 | About | 在 Console 顯示目前版本 |
@@ -196,6 +224,7 @@ public class Door : MonoBehaviour
 | `Editor/` | `RyanXuWei.HybridLivePreview.Editor`（Editor 平台） | Play／Stop 生命週期、Vite 與 Chrome 程序、Game view 解析度、網頁安裝與同步 |
 | `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming`（僅 `UNITY_EDITOR`） | `PreviewStreamer`：擷取 Game view（或鏡像相機）、WebRTC 視訊軌、DataChannel；預覽用的橋接傳輸層 |
 | `Bridge/` | `RyanXuWei.HybridLivePreview.Bridge`（所有平台，自動參考） | `HybridBridge` API；WebGL Build 用的 `HybridBridge.jslib` 與傳輸層 |
+| `WebGL/` | `RyanXuWei.HybridLivePreview.WebGL`（僅 WebGL Player） | 在 Build WebGL 產出的網站裡，讓 canvas 和頁面共用鍵盤 |
 | `Input/` | `RyanXuWei.HybridLivePreview.Input`（`UNITY_EDITOR` + `ENABLE_INPUT_SYSTEM`） | `RemoteInput`：把瀏覽器輸入注入 Input System 虛擬裝置 |
 | `WebApp~/` | （Unity 不匯入） | Vite 範本、signaling 中繼、viewer、狀態浮動框 |
 
@@ -213,6 +242,13 @@ public class Door : MonoBehaviour
 ## 為什麼不用 Unity Render Streaming？
 
 `com.unity.renderstreaming` 3.1.0-exp.9 在 Unity 6000.3 編譯不過（使用了已移除的 `AndroidApiLevel22`）。本套件直接使用 `com.unity.webrtc` 3.0.0，並在 Vite dev server 裡內建一個小型 signaling 中繼。
+
+## 給 AI 助手
+
+兩份 Markdown 手冊讓任何 AI 助手都能快速理解這個混合架構：
+
+- [`WebApp~/src/hlp/AI-GUIDE.md`](WebApp~/src/hlp/AI-GUIDE.md)：用套件開發應用（檔案歸屬、頁面版面、HybridBridge 規則、做法範例、疑難排解）。它會複製到每個專案的 `HybridPreviewWeb/src/hlp/AI-GUIDE.md`，請 AI 先讀這份。
+- [`AGENTS.md`](AGENTS.md)：修改套件本身。
 
 ## 授權
 

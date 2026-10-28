@@ -16,7 +16,8 @@ No WebGL build, no waiting. Edit a C# script or a CSS file and look again.
 - **Real HTML UI.** Your page is plain HTML/CSS/JS served by Vite, layered over the 3D view. Use any framework you like.
 - **Input goes back to Unity.** Pointer (mouse, pen, touch), wheel and keyboard events on the 3D view are replayed on virtual Input System devices, so `Mouse.current`, `Keyboard.current`, `Touchscreen.current`, Input Actions and `InputSystemUIInputModule` all respond. `Cursor.lockState` turns into browser Pointer Lock.
 - **One channel for data.** `HybridBridge` (C#) and `window.HybridBridge` (page) exchange typed JSON messages; the same API works in the preview and in a WebGL build through a jslib.
-- **Stays out of your builds.** Everything except the small bridge assembly is Editor-only.
+- **One click to the final site.** *Build WebGL* builds the Unity player and your Vite page and merges them; the built page behaves like the preview.
+- **Stays out of your builds.** Everything except the small bridge and WebGL page assemblies is Editor-only.
 
 ## Requirements
 
@@ -26,8 +27,21 @@ No WebGL build, no waiting. Edit a C# script or a CSS file and look again.
 | Active Input Handling | *Input System Package* or *Both* (needed for input forwarding) |
 | Node.js | 18 or newer, with `npm` on `PATH` |
 | Browser | Google Chrome |
+| Unity module | *WebGL Build Support* (only for **Build WebGL**) |
 
 The package depends on `com.unity.webrtc` 3.0.0 and `com.unity.inputsystem` 1.11.2 or newer; Unity installs them automatically.
+
+### Works in any project
+
+Nothing in the package is tied to a particular project, and there is nothing to move, rename or configure per project:
+
+- `HybridPreviewWeb/` is created at the project root on the first Play or build. The package keeps `src/hlp/` up to date and never touches your own files.
+- Product name, company, version and the canvas size cap are read from that project's Player Settings.
+- The Unity build's file names (build name, *Name Files As Hashes*, Brotli/Gzip/none) are detected after each build, not hard-coded.
+- Builds use the scenes in the build profile, or the open scene when it lists none.
+- Working files go to `Library/HybridLivePreview/`, the final site to `Builds/HybridWebGL/`, both inside the project.
+
+Keep the two things the template starts with: the `<video id="stream">` element in `index.html` and the `startHybridPreview(...)` call in `src/main.js`. Everything else in the page is yours.
 
 ## Install
 
@@ -43,11 +57,11 @@ Or add it to `Packages/manifest.json`:
 "com.ryanxuwei.hybrid-live-preview": "https://github.com/RyanXuwei/unity-hybrid-live-preview.git#main"
 ```
 
-Use a tag such as `#v0.5.0` instead of `#main` to pin a version.
+Use a tag such as `#v0.8.0` instead of `#main` to pin a version.
 
 ## Quick start
 
-1. Open a scene with a camera tagged **MainCamera** and press **Play**.
+1. Open a scene and press **Play**. (A camera tagged **MainCamera** is only needed for the *Mirror Camera* capture mode.)
 2. On the first run the web template is copied to `<YourProject>/HybridPreviewWeb/` and `npm install` runs (about a minute).
 3. Chrome opens `http://127.0.0.1:5173/`. The small status pill in the corner turns green and shows **LIVE** with the stream size.
 4. Click the 3D view to give it focus, then use the mouse and keyboard as you would in a WebGL build.
@@ -175,6 +189,18 @@ public class Door : MonoBehaviour
 - A message nobody listens to is dropped; Unity logs one warning per unknown type. Subscribe in `OnEnable` and, when the page loads, ask Unity for the state you need (for example `HybridBridge.send('getState')`) instead of relying on messages sent before the page existed.
 - The bridge assembly (`RyanXuWei.HybridLivePreview.Bridge`) is referenced automatically and is the only part of the package that ships in player builds.
 
+## Build the final WebGL site
+
+**Tools → Hybrid Live Preview → Build WebGL (Unity + Web UI)** makes the deployable result in one step:
+
+1. Builds the Unity WebGL player (the scenes in the build profile, or the open scene if it lists none).
+2. Builds `HybridPreviewWeb` with Vite on top of your `vite.config.js`.
+3. Merges both into `<YourProject>/Builds/HybridWebGL/`: your `index.html`, `assets/`, and Unity's `Build/` (and `StreamingAssets/`).
+
+In the built page `startHybridPreview` starts Unity in a canvas that takes the place of the preview video: same box, same resolution rule (window size in device pixels, capped at the WebGL Default Canvas size), `#app` on top, and `HybridBridge` connected through the jslib. Your UI code does not change between Play and the build. As in the preview, the canvas only takes keyboard input after it is clicked, so text fields in your UI keep working.
+
+**Preview WebGL Build** serves that folder at `http://127.0.0.1:4173/` and opens it in the preview Chrome. With Brotli or Gzip compression and *Decompression Fallback* off, your web server must send `Content-Encoding` for `Build/*.br` / `*.gz` (the preview server does); the page cannot be opened straight from disk. The WebGL template selected in Player Settings is not used by this build, because your page replaces it.
+
 ## Menu
 
 **Tools → Hybrid Live Preview**
@@ -185,6 +211,8 @@ public class Door : MonoBehaviour
 | Match Game View To Preview | Locks the Game view to the stream resolution during Play. |
 | Capture → Game View Output / Mirror Camera (Fallback) | **Game View Output** (default) streams exactly what the Game view shows. **Mirror Camera** renders `Camera.main` a second time and keeps streaming while the Game view is hidden, but effects computed only for the main camera, such as planar reflections, may not match. Applies from the next Play. |
 | Open Preview In Chrome | Reopens the preview window. |
+| Build WebGL (Unity + Web UI) | Builds the Unity player and the web page and merges them into `Builds/HybridWebGL`. |
+| Preview WebGL Build | Serves the last build at `http://127.0.0.1:4173/` and opens it in Chrome. |
 | Install Web App | Copies the template and runs `npm install` now. |
 | Stop Vite And Chrome | Closes leftover processes. |
 | About | Logs the installed version. |
@@ -196,6 +224,7 @@ public class Door : MonoBehaviour
 | `Editor/` | `RyanXuWei.HybridLivePreview.Editor` (Editor platform) | Play/Stop lifecycle, Vite and Chrome processes, Game view sizing, web app install and sync. |
 | `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming` (`UNITY_EDITOR` only) | `PreviewStreamer`: Game view capture (or mirror camera), WebRTC video track, data channels; the preview's bridge transport. |
 | `Bridge/` | `RyanXuWei.HybridLivePreview.Bridge` (all platforms, auto-referenced) | `HybridBridge` API; `HybridBridge.jslib` and its transport for WebGL builds. |
+| `WebGL/` | `RyanXuWei.HybridLivePreview.WebGL` (WebGL players only) | Shares the keyboard with the page in sites made by Build WebGL. |
 | `Input/` | `RyanXuWei.HybridLivePreview.Input` (`UNITY_EDITOR` + `ENABLE_INPUT_SYSTEM`) | `RemoteInput`: replays browser input on virtual Input System devices. |
 | `WebApp~/` | (not imported by Unity) | Vite template, signaling relay, viewer, status panel. |
 
@@ -213,6 +242,13 @@ Runtime files live in `<YourProject>/Library/HybridLivePreview/`: `vite.log`, th
 ## Why not Unity Render Streaming?
 
 `com.unity.renderstreaming` 3.1.0-exp.9 does not compile on Unity 6000.3 (it uses the removed `AndroidApiLevel22`). This package uses `com.unity.webrtc` 3.0.0 directly with its own small signaling relay inside the Vite dev server.
+
+## For AI assistants
+
+Two Markdown guides let any AI assistant pick up the hybrid architecture quickly:
+
+- [`WebApp~/src/hlp/AI-GUIDE.md`](WebApp~/src/hlp/AI-GUIDE.md): building an app with the package (file ownership, page layout, HybridBridge rules, recipes, troubleshooting). It is copied into every project as `HybridPreviewWeb/src/hlp/AI-GUIDE.md`, so point your assistant there.
+- [`AGENTS.md`](AGENTS.md): changing the package itself.
 
 ## License
 

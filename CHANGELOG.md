@@ -2,6 +2,15 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] - 2026-10-28
+
+### Added
+- **Tools > Hybrid Live Preview > Build WebGL (Unity + Web UI)** builds the Unity WebGL player and the `HybridPreviewWeb` page (Vite, on top of your `vite.config.js`) and merges them into `Builds/HybridWebGL`, ready to deploy.
+- In that build `startHybridPreview` runs Unity in a canvas that replaces the preview video, with the same box and resolution rule as the preview stream; `HybridBridge` connects through the jslib, so UI code is unchanged.
+- **Preview WebGL Build** serves the result at `http://127.0.0.1:4173/` (with the `Content-Encoding` headers compressed builds need) and opens it in Chrome.
+- WebGL players built this way only take keyboard input while the canvas has focus, like the preview, so text fields in the page keep working.
+- AI guides: `WebApp~/src/hlp/AI-GUIDE.md` (copied into every project's `HybridPreviewWeb/src/hlp/`) explains how to build on the hybrid architecture; `AGENTS.md` explains how to change the package.
+
 ## [0.7.0] - 2026-10-28
 
 ### Added
