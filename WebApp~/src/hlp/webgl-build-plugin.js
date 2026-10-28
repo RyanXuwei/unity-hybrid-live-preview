@@ -1,7 +1,7 @@
 // Hybrid Live Preview, final WebGL build (package-owned; refreshed from the Unity package, do not edit).
 // Tools > Hybrid Live Preview > Build WebGL writes Library/HybridLivePreview/webgl-build.json after the Unity
 // player build. This plugin reads it to build the page into the output folder, tell startHybridPreview
-// where the player files are, copy them next to the page, and serve compressed files in `vite preview`.
+// where the player files are, copy the player template's files next to the page, and serve compressed files in `vite preview`.
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -27,15 +27,22 @@ export function hybridWebGLBuild() {
       };
     },
     closeBundle() {
-      for (const folder of ['Build', 'StreamingAssets']) {
-        const from = path.join(manifest.playerDir, folder);
-        if (fs.existsSync(from)) fs.cpSync(from, path.join(manifest.outDir, folder), { recursive: true });
-      }
+      mergePlayer(manifest.playerDir, manifest.outDir);
     },
     configurePreviewServer(server) {
       server.middlewares.use((req, res, next) => serveCompressed(manifest.outDir, req, res, next));
     },
   };
+}
+
+// Copies everything the Unity WebGL template wrote next to the page: Build/, StreamingAssets/, TemplateData/ and
+// any custom files the template ships (environmentSetting.js, stomp.min.js...). Only the template's own
+// index.html is skipped, because your page replaces it; files your own build already produced win.
+export function mergePlayer(playerDir, outDir) {
+  for (const entry of fs.readdirSync(playerDir)) {
+    if (entry === 'index.html') continue;
+    fs.cpSync(path.join(playerDir, entry), path.join(outDir, entry), { recursive: true, force: false, errorOnExist: false });
+  }
 }
 
 // Unity's Brotli/Gzip files (without Decompression Fallback) need Content-Encoding, as on a real server.

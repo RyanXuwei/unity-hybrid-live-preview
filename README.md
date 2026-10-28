@@ -195,11 +195,11 @@ public class Door : MonoBehaviour
 
 1. Builds the Unity WebGL player (the scenes in the build profile, or the open scene if it lists none).
 2. Builds `HybridPreviewWeb` with Vite on top of your `vite.config.js`.
-3. Merges both into `<YourProject>/Builds/HybridWebGL/<version>/` (the Player Settings version, so builds of different versions never overwrite each other): your `index.html`, `assets/`, and Unity's `Build/` (and `StreamingAssets/`).
+3. Merges both into `<YourProject>/Builds/HybridWebGL/<version>/` (the Player Settings version, so builds of different versions never overwrite each other): your `index.html`, `assets/`, and everything the Unity WebGL template produced next to it: `Build/`, `StreamingAssets/`, `TemplateData/` and any custom files the template ships (for example `environmentSetting.js`). Only the template's own `index.html` is replaced by your page. If that `index.html` does extra setup (loads scripts, registers a service worker), copy those lines into `HybridPreviewWeb/index.html`; the files they refer to are already in place.
 
 In the built page `startHybridPreview` starts Unity in a canvas that takes the place of the preview video: same box, same resolution rule (window size in device pixels, capped at the WebGL Default Canvas size), `#app` on top, and `HybridBridge` connected through the jslib. Your UI code does not change between Play and the build. As in the preview, the canvas only takes keyboard input after it is clicked, so text fields in your UI keep working.
 
-**Preview WebGL Build** serves that folder at `http://127.0.0.1:4173/` and opens it in the preview Chrome. With Brotli or Gzip compression and *Decompression Fallback* off, your web server must send `Content-Encoding` for `Build/*.br` / `*.gz` (the preview server does); the page cannot be opened straight from disk. The WebGL template selected in Player Settings is not used by this build, because your page replaces it.
+**Preview WebGL Build** serves that folder at `http://127.0.0.1:4173/` and opens it in the preview Chrome. With Brotli or Gzip compression and *Decompression Fallback* off, your web server must send `Content-Encoding` for `Build/*.br` / `*.gz` (the preview server does); the page cannot be opened straight from disk. The WebGL template selected in Player Settings still builds as usual and its files are carried over; only its `index.html` is not, because your page replaces it.
 
 ## Menu
 

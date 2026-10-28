@@ -142,8 +142,11 @@ A working example in this style: an activation menu that toggles the children of
 - **Preview WebGL Build**: serves that folder at `http://127.0.0.1:4173/`.
 - With Brotli/Gzip compression and *Decompression Fallback* off, the web server must send
   `Content-Encoding` for `Build/*.br` / `*.gz`.
-- The WebGL template chosen in Player Settings is not used by this build; the page in
-  `HybridPreviewWeb` is the page.
+- The WebGL template chosen in Player Settings still builds, and everything it produced is copied next to
+  the page (`Build/`, `StreamingAssets/`, `TemplateData/`, custom files such as `environmentSetting.js`),
+  except its `index.html`: the page in `HybridPreviewWeb` is the page. If the template's `index.html` does
+  extra setup (extra `<script src>` tags, service worker registration), put those lines in
+  `HybridPreviewWeb/index.html`; the files they load are already in the output.
 
 ## Troubleshooting
 

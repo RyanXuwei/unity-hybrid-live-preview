@@ -195,11 +195,11 @@ public class Door : MonoBehaviour
 
 1. Build Unity WebGL Player（使用 Build Profile 列出的場景；沒有列的話就用目前開著的場景）。
 2. 以你的 `vite.config.js` 為基礎，用 Vite Build `HybridPreviewWeb`。
-3. 兩者合併到 `<專案>/Builds/HybridWebGL/<版號>/`（版號取自 Player Settings，不同版號的 Build 不會互相覆蓋）：你的 `index.html`、`assets/`，加上 Unity 的 `Build/`（和 `StreamingAssets/`）。
+3. 兩者合併到 `<專案>/Builds/HybridWebGL/<版號>/`（版號取自 Player Settings，不同版號的 Build 不會互相覆蓋）：你的 `index.html`、`assets/`，加上 Unity WebGL 範本產出的其他檔案：`Build/`、`StreamingAssets/`、`TemplateData/`，以及範本自帶的自訂檔案（例如 `environmentSetting.js`）。只有範本自己的 `index.html` 會被你的頁面取代；如果那份 `index.html` 有額外的初始化（載入腳本、註冊 Service Worker 等），請把那幾行搬進 `HybridPreviewWeb/index.html`，它們要用的檔案已經在成品裡了。
 
 Build 出來的頁面裡，`startHybridPreview` 會改成在 canvas 裡啟動 Unity，canvas 取代預覽時的 video：位置大小相同、解析度規則相同（視窗的實體像素，上限是 WebGL Default Canvas 尺寸），`#app` 一樣疊在上面，`HybridBridge` 改走 jslib。從 Play 到正式 Build，你的 UI 程式碼完全不用改。和預覽一樣，canvas 要先點一下才會接收鍵盤，所以 UI 裡的輸入框照常可用。
 
-**Preview WebGL Build** 會在 `http://127.0.0.1:4173/` 架起這個資料夾，並用預覽用的 Chrome 開啟。如果用 Brotli 或 Gzip 壓縮且沒開 *Decompression Fallback*，網站伺服器必須替 `Build/*.br`、`*.gz` 加上 `Content-Encoding` 標頭（預覽伺服器會自動處理），也不能直接從硬碟開 index.html。這個流程不會用到 Player Settings 選的 WebGL 範本，因為頁面就是你的 H5 頁面。
+**Preview WebGL Build** 會在 `http://127.0.0.1:4173/` 架起這個資料夾，並用預覽用的 Chrome 開啟。如果用 Brotli 或 Gzip 壓縮且沒開 *Decompression Fallback*，網站伺服器必須替 `Build/*.br`、`*.gz` 加上 `Content-Encoding` 標頭（預覽伺服器會自動處理），也不能直接從硬碟開 index.html。Player Settings 選的 WebGL 範本照常 Build，它的檔案都會帶過來，只有它的 `index.html` 不會，因為頁面就是你的 H5 頁面。
 
 ## 選單
 

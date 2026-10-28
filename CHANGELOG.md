@@ -2,6 +2,11 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.8.2] - 2026-10-28
+
+### Fixed
+- Build WebGL now carries over everything the Unity WebGL template wrote next to the page (`TemplateData/`, `ServiceWorker.js`, `manifest.webmanifest`, custom files such as `environmentSetting.js` or `stomp.min.js`), not only `Build/` and `StreamingAssets/`. Only the template's own `index.html` is replaced by your page.
+
 ## [0.8.1] - 2026-10-28
 
 ### Changed
