@@ -2,6 +2,13 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] - 2026-10-28
+
+### Added
+- `HybridBridge`: one global channel for data between the H5 page and Unity. C# uses the static class `HybridBridge` (`Send`, `SendJson`, `On<T>`, `OnJson`, `IsConnected`); the page uses `window.HybridBridge` (`send`, `on`, `off`, `connected`). Messages are a type name plus JSON and queue until the other side is connected.
+- In the Editor preview the bridge runs on its own WebRTC data channel; in WebGL builds `HybridBridge.jslib` provides the same `window.HybridBridge` and connects it to C#.
+- New runtime assembly `RyanXuWei.HybridLivePreview.Bridge` (auto-referenced). It is the only part of the package included in player builds.
+
 ## [0.6.0] - 2026-10-27
 
 ### Changed

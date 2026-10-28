@@ -41,8 +41,27 @@ namespace RyanXuWei.HybridLivePreview
         // leaving is reported as {"t":"blur"} so held keys and buttons can be released.
         public event Action<string> InputReceived;
 
+        // Raw JSON from the viewers' "bridge" data channels (HybridBridge messages); may arrive off the main thread.
+        public event Action<string> BridgeReceived;
+
+        // Viewers whose "bridge" channel is open.
+        public int BridgeViewerCount
+        {
+            get
+            {
+                var count = 0;
+                foreach (var channel in bridgeChannels.Values)
+                {
+                    if (channel.ReadyState == RTCDataChannelState.Open)
+                        count++;
+                }
+                return count;
+            }
+        }
+
         readonly Dictionary<string, RTCPeerConnection> peers = new Dictionary<string, RTCPeerConnection>();
         readonly Dictionary<string, RTCDataChannel> channels = new Dictionary<string, RTCDataChannel>();
+        readonly Dictionary<string, RTCDataChannel> bridgeChannels = new Dictionary<string, RTCDataChannel>();
         readonly Dictionary<string, List<RTCIceCandidateInit>> pendingCandidates = new Dictionary<string, List<RTCIceCandidateInit>>();
         readonly SemaphoreSlim sendLock = new SemaphoreSlim(1, 1);
 
@@ -222,6 +241,16 @@ namespace RyanXuWei.HybridLivePreview
             }
         }
 
+        // Sends a HybridBridge envelope to every viewer's bridge channel.
+        public void SendToBridge(string json)
+        {
+            foreach (var channel in bridgeChannels.Values)
+            {
+                if (channel.ReadyState == RTCDataChannelState.Open)
+                    channel.Send(json);
+            }
+        }
+
         async Task RunSignaling(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
@@ -361,10 +390,16 @@ namespace RyanXuWei.HybridLivePreview
             });
             pc.OnDataChannel = channel =>
             {
-                if (channel.Label != "input")
-                    return;
-                channels[id] = channel;
-                channel.OnMessage = bytes => InputReceived?.Invoke(Encoding.UTF8.GetString(bytes));
+                if (channel.Label == "input")
+                {
+                    channels[id] = channel;
+                    channel.OnMessage = bytes => InputReceived?.Invoke(Encoding.UTF8.GetString(bytes));
+                }
+                else if (channel.Label == "bridge")
+                {
+                    bridgeChannels[id] = channel;
+                    channel.OnMessage = bytes => BridgeReceived?.Invoke(Encoding.UTF8.GetString(bytes));
+                }
             };
             pc.OnConnectionStateChange = state =>
             {
@@ -435,6 +470,7 @@ namespace RyanXuWei.HybridLivePreview
             if (string.IsNullOrEmpty(id))
                 return;
             pendingCandidates.Remove(id);
+            bridgeChannels.Remove(id);
             if (channels.Remove(id))
                 InputReceived?.Invoke("{\"t\":\"blur\"}");
             if (!peers.TryGetValue(id, out var pc))

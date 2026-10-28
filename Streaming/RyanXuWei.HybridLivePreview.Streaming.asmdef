@@ -2,7 +2,8 @@
     "name": "RyanXuWei.HybridLivePreview.Streaming",
     "rootNamespace": "RyanXuWei.HybridLivePreview",
     "references": [
-        "Unity.WebRTC"
+        "Unity.WebRTC",
+        "RyanXuWei.HybridLivePreview.Bridge"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

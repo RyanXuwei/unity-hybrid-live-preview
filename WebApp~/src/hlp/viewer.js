@@ -1,6 +1,9 @@
 // Hybrid Live Preview viewer (package-owned; refreshed from the Unity package, do not edit).
 // Receives the Unity camera over WebRTC into a <video> and forwards pointer, wheel and keyboard
-// input back to Unity, so the video behaves like a WebGL build's canvas.
+// input back to Unity, so the video behaves like a WebGL build's canvas. window.HybridBridge messages
+// travel on their own data channel.
+
+import { bridge } from './bridge.js';
 
 export function startViewer(video, { onChange } = {}) {
   const state = {
@@ -22,6 +25,7 @@ export function startViewer(video, { onChange } = {}) {
   let ws = null;
   let pc = null;
   let channel = null;
+  let bridgeTransport = null;
   let retry = 0;
   let pendingCandidates = [];
 
@@ -82,6 +86,7 @@ export function startViewer(video, { onChange } = {}) {
     pc = peer;
     peer.addTransceiver('video', { direction: 'recvonly' });
     openInputChannel(peer.createDataChannel('input', { ordered: true }));
+    openBridgeChannel(peer.createDataChannel('bridge', { ordered: true }));
     peer.ontrack = (event) => {
       video.srcObject = event.streams[0] ?? new MediaStream([event.track]);
     };
@@ -123,6 +128,7 @@ export function startViewer(video, { onChange } = {}) {
     pendingCandidates = [];
     if (!pc) return;
     releaseAll();
+    closeBridge();
     channel = null;
     pc.close();
     pc = null;
@@ -237,6 +243,35 @@ export function startViewer(video, { onChange } = {}) {
     } else if (!msg.lock && document.pointerLockElement === video) {
       document.exitPointerLock();
     }
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // HybridBridge: window.HybridBridge messages go to Unity over the "bridge" data channel. The bridge
+  // queues while no channel is open, so the page can send before Unity is ready.
+
+  function openBridgeChannel(dc) {
+    const transport = {
+      post: (type, data) => {
+        if (dc.readyState === 'open') dc.send(JSON.stringify({ type, data }));
+      },
+    };
+    dc.onopen = () => {
+      bridgeTransport = transport;
+      bridge._attach(transport);
+    };
+    dc.onclose = () => {
+      if (bridgeTransport === transport) closeBridge();
+    };
+    dc.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      bridge._deliver(msg.type, msg.data);
+    };
+  }
+
+  function closeBridge() {
+    if (!bridgeTransport) return;
+    bridge._detach(bridgeTransport);
+    bridgeTransport = null;
   }
 
   connect();

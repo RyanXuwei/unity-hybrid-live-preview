@@ -15,7 +15,8 @@
 - **跟 Game view 完全相同的畫面**：串流直接複製 Game view 的最終畫面，反射、後製特效、相機堆疊和 Screen Space - Overlay 的 Canvas 在 Chrome 裡看起來都一樣。
 - **真正的 HTML UI**：網頁是由 Vite 提供的一般 HTML／CSS／JS，疊在 3D 畫面上，要用什麼框架都可以。
 - **輸入傳回 Unity**：在 3D 畫面上的滑鼠、筆、觸控、滾輪和鍵盤，會注入 Input System 的虛擬裝置，`Mouse.current`、`Keyboard.current`、`Touchscreen.current`、Input Actions 和 `InputSystemUIInputModule` 都收得到。`Cursor.lockState` 會變成瀏覽器的 Pointer Lock。
-- **不會進到 Build**：所有組件都只在 Editor 編譯，不會打包進任何 Player。
+- **單一資料通道**：`HybridBridge`（C#）和 `window.HybridBridge`（網頁）互傳帶類型的 JSON 訊息，同一套 API 在預覽和 WebGL Build（透過 jslib）都能用。
+- **不會進到 Build**：除了小小的橋接組件，其他都只在 Editor 編譯。
 
 ## 需求
 
@@ -126,6 +127,54 @@ public class Spin : MonoBehaviour
 
 預覽執行期間，因為焦點在 Chrome 而不是 Editor，套件會暫時把 Input System 的 *Background Behavior* 設成 *Ignore Focus*，並把所有裝置輸入導向 Game view。Stop 時兩個設定都會還原。
 
+## 網頁與 Unity 互傳資料（HybridBridge）
+
+`HybridBridge` 是 H5 網頁和 Unity 之間唯一的資料通道，兩邊各只有一個全域入口：C# 的靜態類別 `HybridBridge`，以及網頁的 `window.HybridBridge`。一則訊息由「類型名稱＋JSON 內容」組成。同一份程式碼在 Editor 預覽（走 WebRTC DataChannel）和 WebGL Build（走 `HybridBridge.jslib`）都能直接執行，差別只在底下的傳輸層。
+
+網頁端（任何腳本都能用，不需要 import）：
+
+```js
+HybridBridge.send('door', { id: 'A1', open: true });
+
+const off = HybridBridge.on('sensor', (data) => {
+  document.querySelector('#temp').textContent = data.celsius;
+});
+// 呼叫 off() 停止接收。
+```
+
+Unity 端：
+
+```csharp
+using System;
+using RyanXuWei.HybridLivePreview;
+using UnityEngine;
+
+public class Door : MonoBehaviour
+{
+    [Serializable] class DoorCommand { public string id; public bool open; }
+    [Serializable] class Reading { public float celsius; }
+
+    IDisposable subscription;
+
+    void OnEnable() => subscription = HybridBridge.On<DoorCommand>("door", cmd => Debug.Log($"{cmd.id} open={cmd.open}"));
+    void OnDisable() => subscription?.Dispose();
+
+    void Report(float celsius) => HybridBridge.Send("sensor", new Reading { celsius = celsius });
+}
+```
+
+| C# | 網頁 | 說明 |
+|---|---|---|
+| `HybridBridge.Send(type, payload)` | `HybridBridge.send(type, payload)` | C# 的內容用 `JsonUtility` 序列化（`[Serializable]` 的 class 或 struct）。`HybridBridge.Send(type)` 不帶內容。 |
+| `HybridBridge.SendJson(type, json)` | | 內容已經是 JSON 時使用（陣列、字串、數字…）。 |
+| `HybridBridge.On<T>(type, handler)` | `HybridBridge.on(type, (payload, type) => …)` | C# 回傳 `IDisposable`，網頁回傳 `off()` 函式。 |
+| `HybridBridge.OnJson(type, handler)` | `HybridBridge.off(type, handler)` | `OnJson` 直接拿到原始 JSON 字串。 |
+| `HybridBridge.IsConnected` | `HybridBridge.connected` | 另一端目前是否連得到。 |
+
+- 兩邊隨時都能送。另一端還沒連上時，訊息會先排隊（最多 256 則，滿了就丟最舊的），連上後再送達。
+- 沒有人接收的訊息會被丟棄，Unity 對每種未知類型只會警告一次。請在 `OnEnable` 訂閱；網頁載入時主動向 Unity 要需要的狀態（例如 `HybridBridge.send('getState')`），不要依賴網頁出現之前送出的訊息。
+- 橋接組件 `RyanXuWei.HybridLivePreview.Bridge` 會自動被專案參考，也是本套件唯一會打包進 Player 的部分。
+
 ## 選單
 
 **Tools → Hybrid Live Preview**
@@ -145,7 +194,8 @@ public class Spin : MonoBehaviour
 | 資料夾 | 組件 | 用途 |
 |---|---|---|
 | `Editor/` | `RyanXuWei.HybridLivePreview.Editor`（Editor 平台） | Play／Stop 生命週期、Vite 與 Chrome 程序、Game view 解析度、網頁安裝與同步 |
-| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming`（僅 `UNITY_EDITOR`） | `PreviewStreamer`：擷取 Game view（或鏡像相機）、WebRTC 視訊軌、DataChannel |
+| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming`（僅 `UNITY_EDITOR`） | `PreviewStreamer`：擷取 Game view（或鏡像相機）、WebRTC 視訊軌、DataChannel；預覽用的橋接傳輸層 |
+| `Bridge/` | `RyanXuWei.HybridLivePreview.Bridge`（所有平台，自動參考） | `HybridBridge` API；WebGL Build 用的 `HybridBridge.jslib` 與傳輸層 |
 | `Input/` | `RyanXuWei.HybridLivePreview.Input`（`UNITY_EDITOR` + `ENABLE_INPUT_SYSTEM`） | `RemoteInput`：把瀏覽器輸入注入 Input System 虛擬裝置 |
 | `WebApp~/` | （Unity 不匯入） | Vite 範本、signaling 中繼、viewer、狀態浮動框 |
 

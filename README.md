@@ -15,7 +15,8 @@ No WebGL build, no waiting. Edit a C# script or a CSS file and look again.
 - **Same pixels as the Game view.** The stream copies the Game view's finished image, so reflections, post-processing, camera stacks and Screen Space - Overlay canvases look the same in Chrome.
 - **Real HTML UI.** Your page is plain HTML/CSS/JS served by Vite, layered over the 3D view. Use any framework you like.
 - **Input goes back to Unity.** Pointer (mouse, pen, touch), wheel and keyboard events on the 3D view are replayed on virtual Input System devices, so `Mouse.current`, `Keyboard.current`, `Touchscreen.current`, Input Actions and `InputSystemUIInputModule` all respond. `Cursor.lockState` turns into browser Pointer Lock.
-- **Stays out of your builds.** Every assembly is Editor-only; nothing from this package is compiled into a player.
+- **One channel for data.** `HybridBridge` (C#) and `window.HybridBridge` (page) exchange typed JSON messages; the same API works in the preview and in a WebGL build through a jslib.
+- **Stays out of your builds.** Everything except the small bridge assembly is Editor-only.
 
 ## Requirements
 
@@ -126,6 +127,54 @@ The legacy `UnityEngine.Input` API (`Input.GetMouseButton`, `Input.GetKey`, …)
 
 While the preview runs, the package temporarily sets the Input System's *Background Behavior* to *Ignore Focus* and routes all device input to the Game view, because Chrome, not the Editor, has focus. Both settings are restored on Stop.
 
+## Talk between the page and Unity (HybridBridge)
+
+`HybridBridge` is the one channel for data between your H5 page and Unity. Each side has a single global entry point: the static C# class `HybridBridge` and the page's `window.HybridBridge`. A message is a type name plus a JSON payload. The same code runs in the Editor preview (over a WebRTC data channel) and in a WebGL build (through `HybridBridge.jslib`); only the transport underneath changes.
+
+Page side (any script, no import needed):
+
+```js
+HybridBridge.send('door', { id: 'A1', open: true });
+
+const off = HybridBridge.on('sensor', (data) => {
+  document.querySelector('#temp').textContent = data.celsius;
+});
+// off() stops listening.
+```
+
+Unity side:
+
+```csharp
+using System;
+using RyanXuWei.HybridLivePreview;
+using UnityEngine;
+
+public class Door : MonoBehaviour
+{
+    [Serializable] class DoorCommand { public string id; public bool open; }
+    [Serializable] class Reading { public float celsius; }
+
+    IDisposable subscription;
+
+    void OnEnable() => subscription = HybridBridge.On<DoorCommand>("door", cmd => Debug.Log($"{cmd.id} open={cmd.open}"));
+    void OnDisable() => subscription?.Dispose();
+
+    void Report(float celsius) => HybridBridge.Send("sensor", new Reading { celsius = celsius });
+}
+```
+
+| C# | Page | Notes |
+|---|---|---|
+| `HybridBridge.Send(type, payload)` | `HybridBridge.send(type, payload)` | C# payloads go through `JsonUtility` (a `[Serializable]` class or struct). `HybridBridge.Send(type)` sends no payload. |
+| `HybridBridge.SendJson(type, json)` | | Payload that is already JSON (arrays, strings, numbers…). |
+| `HybridBridge.On<T>(type, handler)` | `HybridBridge.on(type, (payload, type) => …)` | Returns `IDisposable` in C#, an `off()` function on the page. |
+| `HybridBridge.OnJson(type, handler)` | `HybridBridge.off(type, handler)` | `OnJson` hands over the raw JSON string. |
+| `HybridBridge.IsConnected` | `HybridBridge.connected` | Whether the other side is reachable right now. |
+
+- Either side can send at any time. Until the other side is connected, messages wait in a queue (up to 256, oldest dropped first) and are delivered once it is.
+- A message nobody listens to is dropped; Unity logs one warning per unknown type. Subscribe in `OnEnable` and, when the page loads, ask Unity for the state you need (for example `HybridBridge.send('getState')`) instead of relying on messages sent before the page existed.
+- The bridge assembly (`RyanXuWei.HybridLivePreview.Bridge`) is referenced automatically and is the only part of the package that ships in player builds.
+
 ## Menu
 
 **Tools → Hybrid Live Preview**
@@ -145,7 +194,8 @@ While the preview runs, the package temporarily sets the Input System's *Backgro
 | Folder | Assembly | Role |
 |---|---|---|
 | `Editor/` | `RyanXuWei.HybridLivePreview.Editor` (Editor platform) | Play/Stop lifecycle, Vite and Chrome processes, Game view sizing, web app install and sync. |
-| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming` (`UNITY_EDITOR` only) | `PreviewStreamer`: Game view capture (or mirror camera), WebRTC video track, data channel. |
+| `Streaming/` | `RyanXuWei.HybridLivePreview.Streaming` (`UNITY_EDITOR` only) | `PreviewStreamer`: Game view capture (or mirror camera), WebRTC video track, data channels; the preview's bridge transport. |
+| `Bridge/` | `RyanXuWei.HybridLivePreview.Bridge` (all platforms, auto-referenced) | `HybridBridge` API; `HybridBridge.jslib` and its transport for WebGL builds. |
 | `Input/` | `RyanXuWei.HybridLivePreview.Input` (`UNITY_EDITOR` + `ENABLE_INPUT_SYSTEM`) | `RemoteInput`: replays browser input on virtual Input System devices. |
 | `WebApp~/` | (not imported by Unity) | Vite template, signaling relay, viewer, status panel. |
 
