@@ -247,6 +247,7 @@ public class Door : MonoBehaviour
 - **編輯器沒有焦點時輸入失效或畫面凍結**：預覽在 Play 期間會自動開啟 *Run In Background*。另外請檢查 Game view 工具列的 Play Mode 必須是 *Play Focused*（選 *Play Unfocused* 會讓鍵盤輸入失效）。
 - **預覽畫面凍結**：Game view 被其他分頁蓋住時，Unity 會停止渲染它，Console 也會出現警告。請讓 Game view 保持可見，或把 *Capture* 切到 *Mirror Camera*。
 - **只有 Chrome 裡的反射或特效不對**：*Capture* 目前是 *Mirror Camera*，切回 *Game View Output* 即可。
+- **Console 警告目前的 Build Profile 不是 Web**：本套件只支援 Web 輸出，請在 *File > Build Profiles* 切換到 Web 平台；按 **Build WebGL** 時也會詢問是否幫你切換。
 - **找不到 Chrome**：會改開預設瀏覽器。Chrome 裝在特殊位置時，可用 `EditorPrefs` 的 `RyanXuWei.HybridLivePreview.ChromePath` 指定路徑。
 
 ## 為什麼不用 Unity Render Streaming？

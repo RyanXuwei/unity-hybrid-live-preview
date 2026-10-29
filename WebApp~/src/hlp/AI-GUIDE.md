@@ -135,6 +135,9 @@ A working example in this style: an activation menu that toggles the children of
 - The Game view toolbar Play Mode must be *Play Focused*; *Play Unfocused* breaks keyboard input. The
   preview sets `Application.runInBackground = true` during Play and restores it afterwards, so the game
   keeps running while Chrome has focus.
+- The package only supports **Web** output: the active Build Profile should be the Web platform (Play
+  warns otherwise, and Build WebGL offers to switch).
+- Reloading or changing scenes (`SceneManager.LoadScene`) is fine: the preview stays connected.
 - Do not reference `UnityEditor` from runtime scripts.
 
 ## Building and shipping
@@ -164,4 +167,5 @@ A working example in this style: an activation menu that toggles the children of
 | C# handler receives empty object | Payload shape does not match the `[Serializable]` class fields (names are case-sensitive). |
 | Input does nothing in the preview | Script uses legacy `Input`; or the 3D view was not clicked first. |
 | Build fails at `vite build` | `Library/HybridLivePreview/vite-build.log`. |
+| Console: active Build Profile is not Web | Switch to the Web platform in File > Build Profiles. |
 | Built page shows nothing | Check the browser console; compressed builds need `Content-Encoding` headers. |

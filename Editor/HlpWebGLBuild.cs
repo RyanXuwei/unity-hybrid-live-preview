@@ -50,6 +50,11 @@ namespace RyanXuWei.HybridLivePreview.Editor
             public int maxHeight;
         }
 
+        // The package only outputs Web; in Unity 6 the active Build Profile's platform is the active build target.
+        public static bool IsWebTarget => EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebGL;
+
+        public static string ActiveTargetName => EditorUserBuildSettings.activeBuildTarget.ToString();
+
         // The last build, whatever its version.
         public static bool HasBuild
         {
@@ -73,6 +78,19 @@ namespace RyanXuWei.HybridLivePreview.Editor
             {
                 Debug.LogError("[HybridLivePreview] WebGL Build Support is not installed; add it to this Editor in Unity Hub.");
                 return;
+            }
+            if (!IsWebTarget)
+            {
+                if (!EditorUtility.DisplayDialog("Hybrid Live Preview",
+                        $"The active Build Profile targets {ActiveTargetName}, but Hybrid Live Preview only builds for Web.\n\n" +
+                        "Switch the project to the Web platform and build? Switching reimports assets for Web, which can take a while.",
+                        "Switch to Web and Build", "Cancel"))
+                    return;
+                if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.WebGL, BuildTarget.WebGL))
+                {
+                    Debug.LogError("[HybridLivePreview] Could not switch to the Web platform; switch it in File > Build Profiles and build again.");
+                    return;
+                }
             }
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 return;

@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.9.3] - 2026-10-29
+
+### Fixed
+- The preview stream and HybridBridge no longer drop to "Waiting for Unity Play" when the game reloads or changes scenes (`SceneManager.LoadScene`): the streamer now survives scene loads, and Mirror Camera mode follows the new scene's `Camera.main`.
+
+### Added
+- The package only supports Web output, so it now checks the active Build Profile. Entering Play on another platform logs a warning; **Build WebGL** asks to switch the project to Web first (or cancel).
+
 ## [0.9.2] - 2026-10-29
 
 ### Fixed

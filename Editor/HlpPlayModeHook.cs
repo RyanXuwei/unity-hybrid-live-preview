@@ -41,6 +41,9 @@ namespace RyanXuWei.HybridLivePreview.Editor
                 case PlayModeStateChange.EnteredPlayMode:
                     if (!Active)
                         return;
+                    if (!HlpWebGLBuild.IsWebTarget)
+                        Debug.LogWarning($"[HybridLivePreview] The active Build Profile targets {HlpWebGLBuild.ActiveTargetName}, but Hybrid Live Preview only supports Web output. " +
+                                         "Switch to the Web platform in File > Build Profiles so the preview matches what you ship.");
                     SpawnStreamer();
                     OpenChromeWhenViteIsUp();
                     break;
@@ -62,6 +65,8 @@ namespace RyanXuWei.HybridLivePreview.Editor
         static void SpawnStreamer()
         {
             var go = new GameObject("[HybridLivePreview] Streamer");
+            // Survives SceneManager.LoadScene, so the page stays connected when the game reloads or changes scenes.
+            Object.DontDestroyOnLoad(go);
             go.SetActive(false);
             var streamer = go.AddComponent<PreviewStreamer>();
             streamer.signalingUrl = HlpSettings.SignalingUrl;

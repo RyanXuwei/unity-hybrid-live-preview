@@ -140,7 +140,12 @@ namespace RyanXuWei.HybridLivePreview
 
         void LateUpdate()
         {
-            if (mirror == null || source == null)
+            if (mirror == null)
+                return;
+            // A scene load destroys the camera being mirrored; follow the new scene's main camera.
+            if (source == null)
+                source = Camera.main;
+            if (source == null)
                 return;
             mirror.transform.SetPositionAndRotation(source.transform.position, source.transform.rotation);
             mirror.fieldOfView = source.fieldOfView;
