@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.9.2] - 2026-10-29
+
+### Fixed
+- The game no longer freezes (frames and input) while Chrome has focus: the preview turns on `Application.runInBackground` during Play and restores it afterwards, so projects no longer need Player Settings > Run In Background.
+
+### Changed
+- The "Game view is not rendering" warning now also mentions the Game view Play Mode, which must be *Play Focused*. Troubleshooting in the READMEs and AI-GUIDE covers both settings.
+
 ## [0.9.1] - 2026-10-28
 
 ### Changed

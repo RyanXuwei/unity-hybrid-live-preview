@@ -244,6 +244,7 @@ Runtime files live in `<YourProject>/Library/HybridLivePreview/`: `vite.log`, th
 - **The panel says "Vite offline".** Check `Library/HybridLivePreview/vite.log`. Make sure `node` and `npm` run in a new terminal and that port 5173 is free.
 - **The panel stays on "Waiting for Unity Play".** Make sure the scene has a camera tagged MainCamera and that the Console shows `[HybridLivePreview] Signaling connected`.
 - **Input does nothing.** Click the 3D view first so it has keyboard focus, set *Active Input Handling* to *Input System Package* or *Both*, and read input through the Input System.
+- **Input does nothing or the picture freezes unless the Editor is focused.** The preview turns on *Run In Background* for you during Play. Also check the Game view toolbar: its Play Mode must be *Play Focused* (*Play Unfocused* makes keyboard input stop working).
 - **The preview freezes.** Unity stops rendering a Game view that is hidden behind another tab, and the Console warns about it. Keep the Game view visible, or switch *Capture* to *Mirror Camera*.
 - **Reflections or effects look different only in Chrome.** *Capture* is set to *Mirror Camera*; switch back to *Game View Output*.
 - **Chrome was not found.** The default browser opens instead; set the path with `EditorPrefs` key `RyanXuWei.HybridLivePreview.ChromePath` if Chrome is installed somewhere unusual.

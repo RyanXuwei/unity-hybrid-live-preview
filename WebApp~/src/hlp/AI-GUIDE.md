@@ -132,6 +132,9 @@ A working example in this style: an activation menu that toggles the children of
 - The preview streams the **Game view**. Keep it visible during Play (a hidden Game view pauses the
   stream). **Tools > Hybrid Live Preview > Capture > Mirror Camera** is a fallback that renders
   `Camera.main` separately.
+- The Game view toolbar Play Mode must be *Play Focused*; *Play Unfocused* breaks keyboard input. The
+  preview sets `Application.runInBackground = true` during Play and restores it afterwards, so the game
+  keeps running while Chrome has focus.
 - Do not reference `UnityEditor` from runtime scripts.
 
 ## Building and shipping

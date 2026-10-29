@@ -77,10 +77,21 @@ namespace RyanXuWei.HybridLivePreview
         CancellationTokenSource cts;
         bool loggedOffline;
 
+        bool savedRunInBackground;
+
         void OnEnable()
         {
             Instance = this;
+            // The user works in Chrome, so the Editor is unfocused; without this Unity freezes the player loop
+            // (frames and input) until the Editor is focused again.
+            savedRunInBackground = Application.runInBackground;
+            Application.runInBackground = true;
             Created?.Invoke(this);
+        }
+
+        void OnDisable()
+        {
+            Application.runInBackground = savedRunInBackground;
         }
 
         void Start()
@@ -123,7 +134,7 @@ namespace RyanXuWei.HybridLivePreview
                 return;
             var stalled = Time.realtimeSinceStartup - lastGrab > 2f;
             if (stalled && !warnedStall)
-                Debug.LogWarning("[HybridLivePreview] The Game view is not rendering (hidden behind another tab?), so the stream is paused. Keep it visible, or switch Tools > Hybrid Live Preview > Capture to Mirror Camera.");
+                Debug.LogWarning("[HybridLivePreview] The Game view is not rendering (hidden behind another tab, or its Play Mode is not Play Focused?), so the stream is paused. Keep it visible, set the Game view Play Mode to Play Focused, or switch Tools > Hybrid Live Preview > Capture to Mirror Camera.");
             warnedStall = stalled;
         }
 

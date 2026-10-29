@@ -244,6 +244,7 @@ public class Door : MonoBehaviour
 - **狀態框顯示「Vite offline」**：查看 `Library/HybridLivePreview/vite.log`，確認新開的終端機能執行 `node` 和 `npm`，且 5173 埠沒被佔用。
 - **一直顯示「Waiting for Unity Play」**：確認場景有 MainCamera 標籤的相機，Console 有出現 `[HybridLivePreview] Signaling connected`。
 - **輸入沒反應**：先點一下 3D 畫面取得鍵盤焦點；Active Input Handling 要是 *Input System Package* 或 *Both*；腳本要用 Input System 讀輸入。
+- **編輯器沒有焦點時輸入失效或畫面凍結**：預覽在 Play 期間會自動開啟 *Run In Background*。另外請檢查 Game view 工具列的 Play Mode 必須是 *Play Focused*（選 *Play Unfocused* 會讓鍵盤輸入失效）。
 - **預覽畫面凍結**：Game view 被其他分頁蓋住時，Unity 會停止渲染它，Console 也會出現警告。請讓 Game view 保持可見，或把 *Capture* 切到 *Mirror Camera*。
 - **只有 Chrome 裡的反射或特效不對**：*Capture* 目前是 *Mirror Camera*，切回 *Game View Output* 即可。
 - **找不到 Chrome**：會改開預設瀏覽器。Chrome 裝在特殊位置時，可用 `EditorPrefs` 的 `RyanXuWei.HybridLivePreview.ChromePath` 指定路徑。
