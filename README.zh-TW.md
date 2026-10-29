@@ -8,6 +8,12 @@
 
 ![架構](Documentation~/images/architecture.svg)
 
+## 實機運行畫面演示
+
+點下方圖片到 YouTube 觀看實機運行畫面：
+
+[![Hybrid Live Preview 實機運行畫面演示](https://img.youtube.com/vi/6tSYVJvjHwY/hqdefault.jpg)](https://youtu.be/6tSYVJvjHwY)
+
 ## 功能
 
 - **一鍵啟動**：Play 時自動啟動 Vite 和專用的 Chrome 視窗；Stop 時全部關閉，並還原所有改過的設定。

@@ -8,6 +8,12 @@ No WebGL build, no waiting. Edit a C# script or a CSS file and look again.
 
 ![How Hybrid Live Preview works](Documentation~/images/architecture.svg)
 
+## Demo
+
+See it running on real hardware (YouTube):
+
+[![Hybrid Live Preview demo on YouTube](https://img.youtube.com/vi/6tSYVJvjHwY/hqdefault.jpg)](https://youtu.be/6tSYVJvjHwY)
+
 ## Features
 
 - **One button.** Play starts a Vite dev server and a dedicated Chrome window; Stop closes both and restores everything it changed.
