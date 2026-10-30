@@ -195,6 +195,16 @@ public class Door : MonoBehaviour
 - A message nobody listens to is dropped; Unity logs one warning per unknown type. Subscribe in `OnEnable` and, when the page loads, ask Unity for the state you need (for example `HybridBridge.send('getState')`) instead of relying on messages sent before the page existed.
 - The bridge assembly (`RyanXuWei.HybridLivePreview.Bridge`) is referenced automatically and is the only part of the package that ships in player builds.
 
+## Accessibility sample (screen readers)
+
+The package ships an **Accessibility** sample: **Window → Package Manager → Hybrid Live Preview → Samples → Accessibility → Import**. It makes uGUI screens readable by NVDA, VoiceOver and JAWS, in the Play preview and in the WebGL build:
+
+- Unity sends the visible `Button`s, `TMP_Text`/`Text` and labelled images to the page; the page lays transparent, real HTML elements over the game at the same positions. Tab moves between them, Enter/Space presses the Unity button, Esc returns to the game.
+- `A11ySubtitle.Show("…", "Speaker")` shows a caption and reads it aloud.
+- Add **UI → Accessibility → A11y Label** to name a button, give an image alt text, add a description, or hide an element from screen readers.
+
+After the import, the page files are copied to `HybridPreviewWeb/src/a11y/`. Turn the layer on with **Tools → Hybrid Live Preview → Accessibility → Add startA11y() To main.js**, or add `import { startA11y } from './a11y/a11y.js';` and `startA11y({ lang: 'zh-TW' });` yourself. Set `lang` to the language of your UI text; screen readers choose the voice from it. Details are in the sample's `README.md`.
+
 ## Build the final WebGL site
 
 **Tools → Hybrid Live Preview → Build WebGL (Unity + Web UI)** makes the deployable result in one step:
@@ -229,6 +239,7 @@ The layer is `pointer-events: none` like in the preview, so clicks pass through 
 | Build WebGL (Unity + Web UI) | Builds the Unity player and the web page and merges them into `Builds/HybridWebGL/<version>`. |
 | Preview WebGL Build | Serves the last build at `http://127.0.0.1:4173/` and opens it in Chrome. |
 | Install Web App | Copies the template and runs `npm install` now. |
+| Accessibility → Install Web Files / Add startA11y() To main.js | Only with the Accessibility sample imported: (re)copies its page files to `src/a11y/`, or turns the layer on in `main.js`. |
 | Stop Vite And Chrome | Closes leftover processes. |
 | About | Logs the installed version. |
 

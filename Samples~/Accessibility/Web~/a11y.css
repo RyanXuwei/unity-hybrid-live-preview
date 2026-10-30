@@ -1,0 +1,74 @@
+/* Accessibility layer: invisible and click-through for the mouse, but focusable by keyboard and screen readers. */
+.a11y-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.a11y-node {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  font-size: 1px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Sighted keyboard users see which element has focus. */
+.a11y-node:focus-visible {
+  outline: 3px solid #ffd54a;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.a11y-subtitle {
+  position: absolute;
+  left: 50%;
+  bottom: max(6vh, calc(env(safe-area-inset-bottom) + 16px));
+  transform: translateX(-50%);
+  max-width: min(90vw, 960px);
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-size: clamp(16px, 2.4vw, 28px);
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.a11y-speaker {
+  color: #ffd54a;
+}
+
+.a11y-skip {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 3;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 0;
+  background: #ffd54a;
+  color: #111;
+  font: inherit;
+  transform: translateY(-200%);
+}
+
+.a11y-skip:focus {
+  transform: none;
+}
+
+.a11y-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

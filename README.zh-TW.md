@@ -195,6 +195,16 @@ public class Door : MonoBehaviour
 - 沒有人接收的訊息會被丟棄，Unity 對每種未知類型只會警告一次。請在 `OnEnable` 訂閱；網頁載入時主動向 Unity 要需要的狀態（例如 `HybridBridge.send('getState')`），不要依賴網頁出現之前送出的訊息。
 - 橋接組件 `RyanXuWei.HybridLivePreview.Bridge` 會自動被專案參考，也是本套件唯一會打包進 Player 的部分。
 
+## 無障礙範例（螢幕閱讀器）
+
+套件附帶 **Accessibility** 範例：**Window → Package Manager → Hybrid Live Preview → Samples → Accessibility → Import**。它讓 uGUI 畫面在 Play 預覽與 WebGL Build 中都能被 NVDA、VoiceOver、JAWS 讀出來：
+
+- Unity 把畫面上的 `Button`、`TMP_Text`／`Text` 與有填說明的圖片送給網頁，網頁在同樣位置疊上透明的真 HTML 元素。Tab 在元素間移動，Enter／Space 按下 Unity 按鈕，Esc 回到遊戲。
+- `A11ySubtitle.Show("…", "說話者")` 顯示字幕並念出來。
+- 掛 **UI → Accessibility → A11y Label** 可以替按鈕命名、替圖片加替代文字、補充說明，或讓閱讀器略過某個元素。
+
+匯入後網頁檔會複製到 `HybridPreviewWeb/src/a11y/`。用 **Tools → Hybrid Live Preview → Accessibility → Add startA11y() To main.js** 啟用，或自己加上 `import { startA11y } from './a11y/a11y.js';` 與 `startA11y({ lang: 'zh-TW' });`。`lang` 要設成 UI 文字的語言，閱讀器依它選擇語音；頁面預設是 `lang="en"`，不設的話 NVDA 會略過中文。詳細說明在範例的 `README.md`。
+
 ## 產出最終 WebGL 網站
 
 **Tools → Hybrid Live Preview → Build WebGL (Unity + Web UI)** 一鍵產出可部署的成品：
@@ -229,6 +239,7 @@ public class Door : MonoBehaviour
 | Build WebGL (Unity + Web UI) | Build Unity Player 和網頁，合併到 `Builds/HybridWebGL/<版號>` |
 | Preview WebGL Build | 在 `http://127.0.0.1:4173/` 架起上一次的成品，並用 Chrome 開啟 |
 | Install Web App | 立即複製範本並執行 `npm install` |
+| Accessibility → Install Web Files／Add startA11y() To main.js | 匯入 Accessibility 範例後才有：重新複製網頁檔到 `src/a11y/`，或在 `main.js` 啟用無障礙層 |
 | Stop Vite And Chrome | 關閉殘留的程序 |
 | About | 在 Console 顯示目前版本 |
 

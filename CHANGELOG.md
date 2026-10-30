@@ -2,6 +2,11 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] - 2026-10-31
+
+### Added
+- **Accessibility** sample (Package Manager > Samples): makes uGUI screens readable by screen readers in the preview and the WebGL build. Buttons, text and labelled images become transparent HTML elements over the game (Tab, Enter/Space, Esc back to the game), `A11ySubtitle.Show()` shows and speaks captions, and the `A11y Label` component names, describes or hides elements. Menu **Accessibility > Install Web Files / Add startA11y() To main.js** sets up the page side.
+
 ## [0.9.3] - 2026-10-29
 
 ### Fixed

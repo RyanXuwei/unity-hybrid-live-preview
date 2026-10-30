@@ -124,6 +124,15 @@ A working example in this style: an activation menu that toggles the children of
 (`ActivationMenuBridge.cs` with `activation:get` / `activation:set` / `activation:list`, and
 `src/demo/activation-menu.js`).
 
+## Accessibility (optional sample)
+
+If `HybridPreviewWeb/src/a11y/` exists, the project imported the **Accessibility** sample (C# in
+`Assets/Samples/Hybrid Live Preview/<version>/Accessibility/`). `startA11y({ lang })` in `main.js` builds a
+screen reader layer from `a11y:tree` messages sent by `A11yBridge`; don't send or handle `a11y:*` types
+yourself. Name buttons and images with the `A11yLabel` component, speak lines with `A11ySubtitle.Show()`.
+In page code use `appendChild`, not `append` (the WebGL template's loading bar replaces `Element.prototype.append`),
+and set `lang` to the UI text's language.
+
 ## Unity-side requirements
 
 - Read input through the **Input System** (`Mouse.current`, `Keyboard.current`, Input Actions,

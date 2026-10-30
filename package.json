@@ -1,6 +1,6 @@
 {
   "name": "com.ryanxuwei.hybrid-live-preview",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "displayName": "Hybrid Live Preview",
   "description": "Press Play in the Unity Editor and preview your game in Chrome the way a WebGL build would run: the 3D view streams over WebRTC, your own HTML/CSS/JS UI sits on top, and mouse, keyboard and touch input flow back into Unity.",
   "unity": "6000.3",
@@ -23,5 +23,12 @@
     "html",
     "ui",
     "editor"
+  ],
+  "samples": [
+    {
+      "displayName": "Accessibility",
+      "description": "Screen reader layer for uGUI: buttons, images and text become real HTML elements over the game (Tab, Enter, NVDA/VoiceOver), plus spoken subtitles. Works in the Play preview and the WebGL build.",
+      "path": "Samples~/Accessibility"
+    }
   ]
 }

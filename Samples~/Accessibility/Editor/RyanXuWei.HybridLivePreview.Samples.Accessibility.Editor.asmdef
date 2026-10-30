@@ -1,0 +1,16 @@
+{
+    "name": "RyanXuWei.HybridLivePreview.Samples.Accessibility.Editor",
+    "rootNamespace": "RyanXuWei.HybridLivePreview.Accessibility.Editor",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
