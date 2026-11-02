@@ -51,6 +51,9 @@ A11ySubtitle.Clear();
 - **Game mode** (default): focus is on the game view, which is marked `role="application"`; every key goes to Unity.
 - **Browse mode**: Tab enters the interface. Tab / Shift+Tab / Enter / Space stay on the page, other keys still
   reach Unity. Esc goes back to the game. A "Back to the game" link appears for keyboard users.
+- **Screen changes**: when the focused element disappears (for example after pressing Start), focus moves to
+  the first new element of the next screen, so screen readers read it and keyboard users don't land on `<body>`.
+  Buttons that are temporarily non-interactable use `aria-disabled` instead of `disabled`, so they keep focus.
 
 ## Options
 
@@ -69,9 +72,33 @@ startA11y({
   skips Chinese text.
 - The WebGL template's `loading-bar.js` replaces `Element.prototype.append`; the layer uses `appendChild`.
   Do the same in your own page code.
-- Accessibility checkers (e.g. Freego, AA) also require: a heading structure (the layer adds an `<h1>` when the page has none), relative `font-size` units in every stylesheet including the WebGL template's `TemplateData/style.css`, and no `lang` on elements that repeats the page's language (the layer only sets it when it differs).
+- Don't put the role in the description (e.g. "button"): screen readers already say it, so the user hears
+  "Mute, button, button".
 - In a WebGL build Unity swallows Tab/Enter/Space at page level, so the layer handles them itself in the
   capture phase. Don't remove that listener.
+
+## Passing an accessibility check (Freego, AA)
+
+Taiwan's [Freego](https://accessibility.moda.gov.tw/) checker (Java 17 runtime; set `JAVA_HOME` if it reports
+"Java Runtime Environment not found") checks the deployed page. What the layer already covers, and what is yours:
+
+| Check | Covered by |
+|---|---|
+| HM1130100C heading structure | The layer adds a screen-reader-only `<h1>` (`title` option) when the page has none. |
+| CS2140401C relative font sizes | The layer's CSS uses em/%. **Yours:** every stylesheet, including the WebGL template's `TemplateData/style.css` (e.g. `font-size: 18px` → `1.125em`). |
+| HM2310200C language of parts | The layer only sets `lang` where it differs from `<html lang>`. **Yours:** set `<html lang>` in the template and `index.html` to your UI's language. |
+
+The software check is only part of an AA review; the manual review covers keyboard use and what the reader
+says. Walk through every screen with Tab / Enter / Esc and a screen reader before submitting.
+
+## Deploying and re-testing
+
+- Scenes loaded through **Addressables** are only updated after rebuilding the Addressables content; a player
+  build alone keeps the old scene (and its A11yLabel settings).
+- A PWA template whose `ServiceWorker.js` serves every request cache-first keeps returning visitors (and the
+  checker's browser) on old files, including the Addressables `catalog.bin`, until the version number changes.
+  Bump the version on each deploy, or make `index.html` and `catalog.bin`/`catalog.hash` network-first. Clear
+  the site data or use a private window when re-testing.
 
 ## Messages
 
