@@ -89,6 +89,13 @@ export function startA11y({
   new MutationObserver(markGame).observe(stage, { childList: true });
 
   const elements = new Map();
+  // When the screen changes under a focused element (its button disappears), move focus to the new screen's
+  // first element instead of letting it drop to <body>, where keyboard users lose their place.
+  let layerHasFocus = false;
+  let refocusTimer = 0;
+  layer.addEventListener('focusin', () => (layerHasFocus = true));
+  document.addEventListener('focusin', (e) => { if (!layer.contains(e.target)) layerHasFocus = false; });
+  document.addEventListener('pointerdown', () => (layerHasFocus = false), true);
 
   bridge.on('a11y:tree', (tree) => render(tree?.nodes ?? []));
   bridge.on('a11y:subtitle', showSubtitle);
@@ -96,6 +103,7 @@ export function startA11y({
 
   function render(nodes) {
     const seen = new Set();
+    const added = [];
     let previous = null;
     for (const node of nodes) {
       seen.add(node.id);
@@ -103,6 +111,7 @@ export function startA11y({
       if (!el || el.dataset.role !== node.role) {
         el?.remove();
         el = create(node);
+        added.push(el);
         elements.set(node.id, el);
       }
       update(el, node);
@@ -113,9 +122,24 @@ export function startA11y({
     }
     for (const [id, el] of elements) {
       if (seen.has(id)) continue;
-      if (el === document.activeElement) game()?.focus({ preventScroll: true });
       el.remove();
       elements.delete(id);
+    }
+    const lost = layerHasFocus && !layer.contains(document.activeElement);
+    if (lost && added.length) {
+      clearTimeout(refocusTimer);
+      refocusTimer = 0;
+      const target = added.find((el) => el.matches('button, [tabindex="0"]')) ?? added[0];
+      if (!target.hasAttribute('tabindex') && target.tagName !== 'BUTTON') target.tabIndex = -1;
+      target.focus({ preventScroll: true });
+    } else if (lost && !refocusTimer) {
+      // The next screen may arrive a few scans later; fall back if it doesn't.
+      refocusTimer = setTimeout(() => {
+        refocusTimer = 0;
+        if (layerHasFocus && !layer.contains(document.activeElement)) {
+          (layer.querySelector('button, [tabindex="0"]') ?? game())?.focus({ preventScroll: true });
+        }
+      }, 1500);
     }
   }
 
@@ -124,7 +148,9 @@ export function startA11y({
     if (node.role === 'button') {
       el = document.createElement('button');
       el.type = 'button';
-      el.addEventListener('click', () => bridge.send('a11y:click', { id: node.id }));
+      el.addEventListener('click', () => {
+        if (el.getAttribute('aria-disabled') !== 'true') bridge.send('a11y:click', { id: node.id });
+      });
       el.addEventListener('focus', () => bridge.send('a11y:focus', { id: node.id }));
     } else {
       el = document.createElement('div');
@@ -142,7 +168,9 @@ export function startA11y({
     } else if (el.getAttribute('aria-label') !== label) {
       el.setAttribute('aria-label', label);
     }
-    if (node.role === 'button') el.disabled = !!node.disabled;
+    // aria-disabled, not disabled: a disabled button loses focus (e.g. a Start button that turns
+    // non-interactable while the next screen loads).
+    if (node.role === 'button') el.setAttribute('aria-disabled', node.disabled ? 'true' : 'false');
     // Images and text with an A11yLabel can be reached with Tab too (A11yLabel.tabStop).
     else if (node.focusable) el.tabIndex = 0;
     else el.removeAttribute('tabindex');
@@ -200,7 +228,7 @@ export function startA11y({
       const active = document.activeElement;
       const inLayer = active === skip || layer.contains(active);
       if (e.key === 'Tab' && (active === game() || inLayer)) {
-        const focusable = [...layer.querySelectorAll('button:not(:disabled), [tabindex="0"]')];
+        const focusable = [...layer.querySelectorAll('button, [tabindex="0"]')];
         if (!focusable.length) return;
         let next;
         if (active === game()) next = e.shiftKey ? focusable[focusable.length - 1] : focusable[0];
