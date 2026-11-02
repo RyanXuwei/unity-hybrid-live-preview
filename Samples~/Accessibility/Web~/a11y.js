@@ -31,11 +31,13 @@ const STRINGS = {
 // lang: language of the layer. Screen readers pick the voice from it, so a page marked lang="en" with Chinese
 // UI text gets skipped or misread; pass the language your UI text is in (e.g. 'zh-TW').
 // strings: overrides for the built-in texts above (English, or Chinese when lang starts with "zh").
+// title: when the page has no <h1>, a screen-reader-only one is added (accessibility checkers require a heading).
 export function startA11y({
   bridge = window.HybridBridge,
   stage = document.querySelector('.stage') ?? document.body,
   lang = document.documentElement.lang || 'en',
   strings = {},
+  title = document.title,
 } = {}) {
   const text = { ...(lang.toLowerCase().startsWith('zh') ? STRINGS.zh : STRINGS.en), ...strings };
 
@@ -61,8 +63,17 @@ export function startA11y({
 
   // appendChild, not append: the WebGL template's loading-bar.js replaces Element.prototype.append globally
   // (it only accepts SVG tag names).
-  for (const el of [skip, layer, subtitle, politeLive, assertiveLive]) stage.appendChild(el);
-  for (const el of [skip, layer, subtitle, politeLive, assertiveLive]) el.lang = lang;
+  const parts = [skip, layer, subtitle, politeLive, assertiveLive];
+  if (title && !document.querySelector('h1')) {
+    const heading = document.createElement('h1');
+    heading.className = 'a11y-sr-only';
+    heading.textContent = title;
+    parts.unshift(heading);
+  }
+  for (const el of parts) stage.appendChild(el);
+  // Only mark lang where it differs from the page; checkers flag a lang equal to the page's (WCAG 3.1.2 tools).
+  const ownLang = lang && lang.toLowerCase() !== document.documentElement.lang.toLowerCase();
+  if (ownLang) for (const el of parts) el.lang = lang;
 
   // The game view itself: announced as an application, so the reader passes keys through to the game.
   const markGame = () => {
@@ -71,7 +82,7 @@ export function startA11y({
     el.dataset.a11y = '1';
     el.setAttribute('role', 'application');
     el.setAttribute('aria-label', text.game);
-    el.lang = lang;
+    if (ownLang) el.lang = lang;
     el.tabIndex = 0;
   };
   markGame();

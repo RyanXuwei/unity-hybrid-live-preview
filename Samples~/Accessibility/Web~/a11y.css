@@ -13,7 +13,7 @@
   border: 0;
   background: transparent;
   color: transparent;
-  font-size: 1px;
+  font-size: 50%;
   overflow: hidden;
   pointer-events: none;
 }
@@ -35,11 +35,17 @@
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.78);
   color: #fff;
-  font-size: clamp(16px, 2.4vw, 28px);
+  font-size: 1.5em;
   line-height: 1.5;
   text-align: center;
   pointer-events: none;
   z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .a11y-subtitle {
+    font-size: 1.125em;
+  }
 }
 
 .a11y-speaker {

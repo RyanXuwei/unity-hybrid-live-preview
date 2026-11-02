@@ -59,6 +59,7 @@ startA11y({
   lang: 'zh-TW',           // default: <html lang>, else 'en'. Built-in texts are English, or Chinese for zh*.
   strings: { skip: '…' },  // override layer, game, skip, descriptionSeparator, speakerSeparator
   stage: document.querySelector('.stage'), // where the layer is added
+  title: document.title,    // screen-reader-only <h1>, added when the page has none
 });
 ```
 
@@ -68,6 +69,7 @@ startA11y({
   skips Chinese text.
 - The WebGL template's `loading-bar.js` replaces `Element.prototype.append`; the layer uses `appendChild`.
   Do the same in your own page code.
+- Accessibility checkers (e.g. Freego, AA) also require: a heading structure (the layer adds an `<h1>` when the page has none), relative `font-size` units in every stylesheet including the WebGL template's `TemplateData/style.css`, and no `lang` on elements that repeats the page's language (the layer only sets it when it differs).
 - In a WebGL build Unity swallows Tab/Enter/Space at page level, so the layer handles them itself in the
   capture phase. Don't remove that listener.
 
