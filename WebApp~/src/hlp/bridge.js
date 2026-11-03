@@ -5,6 +5,7 @@
 //
 //   HybridBridge.send('door', { id: 'A1', open: true });
 //   const off = HybridBridge.on('sensor', (data) => { ... });  // off() stops listening
+//   HybridBridge.on('*', (data, type) => { ... });             // every message from Unity
 //
 // Messages sent before Unity is connected are queued (up to 256) and delivered once it is.
 
@@ -62,7 +63,8 @@ export function createHybridBridge() {
         } catch {
           payload = json;
         }
-        for (const handler of [...(handlers.get(type) ?? [])]) {
+        const list = [...(handlers.get(type) ?? []), ...(type === '*' ? [] : handlers.get('*') ?? [])];
+        for (const handler of list) {
           try {
             handler(payload, type);
           } catch (e) {

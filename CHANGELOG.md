@@ -2,6 +2,14 @@
 
 All notable changes to this package are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses [Semantic Versioning](https://semver.org/).
 
+## [0.11.0] - 2026-11-02
+
+### Added
+- **Iframe embedding.** When your Unity page is embedded in another page with `<iframe>`, that parent page can talk to Unity with the same `send/on/off` API: call `enableParentRelay()` in `main.js`, and use `connectHybridBridge(iframe)` from `hybrid-bridge-host.js` (in `src/hlp/`, copy it into the parent site) in the parent. It relays over `postMessage`, same origin by default; other origins must be listed on both sides, and `types` / `toUnity` limit which messages pass. C# code does not change.
+- `guardEmbedding()` blanks the page when a site that is not listed embeds it (clickjacking guard; pair it with the server header `Content-Security-Policy: frame-ancestors 'self'`).
+- `HybridBridge.on('*', handler)` on the page receives every message from Unity (in the preview and in WebGL builds).
+- **Iframe Embed** sample: a parent page (`/embed/host.html`) and `EmbedDemo`, which keeps the state in Unity while the H5 UI and the parent page only show it.
+
 ## [0.10.0] - 2026-10-31
 
 ### Added

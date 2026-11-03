@@ -195,6 +195,30 @@ public class Door : MonoBehaviour
 - 沒有人接收的訊息會被丟棄，Unity 對每種未知類型只會警告一次。請在 `OnEnable` 訂閱；網頁載入時主動向 Unity 要需要的狀態（例如 `HybridBridge.send('getState')`），不要依賴網頁出現之前送出的訊息。
 - 橋接組件 `RyanXuWei.HybridLivePreview.Bridge` 會自動被專案參考，也是本套件唯一會打包進 Player 的部分。
 
+### 用 iframe 嵌入頁面
+
+如果另一個頁面用 `<iframe>` 嵌入你的 Unity 頁面，那個主框架頁面也能用 HybridBridge。Unity 程式不用改，由頁面透過 `postMessage` 轉接：
+
+```js
+// HybridPreviewWeb/src/main.js（被嵌入的頁面）
+import { enableParentRelay, guardEmbedding } from './hlp/index.js';
+guardEmbedding();      // 只允許同網域的頁面嵌入
+enableParentRelay();   // 讓主框架可以和 Unity 通訊
+```
+
+```js
+// 主框架頁面：把 HybridPreviewWeb/src/hlp/hybrid-bridge-host.js 複製到主框架網站。
+import { connectHybridBridge } from './hybrid-bridge-host.js';
+const unity = connectHybridBridge(document.querySelector('iframe'));
+unity.send('door', { id: 'A1', open: true });
+const off = unity.on('sensor', (data) => { ... });   // on('*', ...) 可收到所有訊息
+```
+
+- **預設只限同網域**：只接收、只送給頁面自己的 origin。主框架在其他網域時，兩邊都要列出對方：`enableParentRelay({ origins: ['https://www.example.com'] })` 與 `connectHybridBridge(iframe, { origin: 'https://game.example.com' })`。
+- `enableParentRelay({ types: [...], toUnity: [...] })` 可限定哪些類型能送到主框架、哪些能送進 Unity。
+- `guardEmbedding()` 在被未列出的網站嵌入時清空頁面（Chrome、Edge、Safari）。網站伺服器也請加上所有瀏覽器都遵守的標頭：`Content-Security-Policy: frame-ancestors 'self'`（IIS 用 `web.config` 的 `<customHeaders>`；nginx 用 `add_header`；Apache 用 `Header set`）。
+- **Iframe Embed** 範例附有可執行的主框架頁面（`/embed/host.html`）和保存狀態的 Unity 腳本。
+
 ## 無障礙範例（螢幕閱讀器）
 
 套件附帶 **Accessibility** 範例：**Window → Package Manager → Hybrid Live Preview → Samples → Accessibility → Import**。它讓 uGUI 畫面在 Play 預覽與 WebGL Build 中都能被 NVDA、VoiceOver、JAWS 讀出來：
@@ -240,6 +264,7 @@ public class Door : MonoBehaviour
 | Preview WebGL Build | 在 `http://127.0.0.1:4173/` 架起上一次的成品，並用 Chrome 開啟 |
 | Install Web App | 立即複製範本並執行 `npm install` |
 | Accessibility → Install Web Files／Add startA11y() To main.js | 匯入 Accessibility 範例後才有：重新複製網頁檔到 `src/a11y/`，或在 `main.js` 啟用無障礙層 |
+| Iframe Embed → Install Host Page／Add enableParentRelay() To main.js | 匯入 Iframe Embed 範例後才有：複製主框架頁面到 `public/embed/`，或在 `main.js` 啟用轉接 |
 | Stop Vite And Chrome | 關閉殘留的程序 |
 | About | 在 Console 顯示目前版本 |
 

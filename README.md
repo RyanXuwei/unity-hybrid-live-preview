@@ -195,6 +195,30 @@ public class Door : MonoBehaviour
 - A message nobody listens to is dropped; Unity logs one warning per unknown type. Subscribe in `OnEnable` and, when the page loads, ask Unity for the state you need (for example `HybridBridge.send('getState')`) instead of relying on messages sent before the page existed.
 - The bridge assembly (`RyanXuWei.HybridLivePreview.Bridge`) is referenced automatically and is the only part of the package that ships in player builds.
 
+### Embed the page in an iframe
+
+If another page embeds your Unity page with `<iframe>`, that parent page can use HybridBridge too. Unity code does not change; the page relays messages over `postMessage`:
+
+```js
+// HybridPreviewWeb/src/main.js (the embedded page)
+import { enableParentRelay, guardEmbedding } from './hlp/index.js';
+guardEmbedding();      // only same-origin pages may embed this page
+enableParentRelay();   // the parent page may talk to Unity
+```
+
+```js
+// The parent page: copy HybridPreviewWeb/src/hlp/hybrid-bridge-host.js into its site.
+import { connectHybridBridge } from './hybrid-bridge-host.js';
+const unity = connectHybridBridge(document.querySelector('iframe'));
+unity.send('door', { id: 'A1', open: true });
+const off = unity.on('sensor', (data) => { ... });   // on('*', ...) receives every message
+```
+
+- **Same origin by default.** Only the page's own origin is accepted and posted to. For a parent on another site, list it on both sides: `enableParentRelay({ origins: ['https://www.example.com'] })` and `connectHybridBridge(iframe, { origin: 'https://game.example.com' })`.
+- `enableParentRelay({ types: [...], toUnity: [...] })` forwards only those types to the parent and to Unity.
+- `guardEmbedding()` blanks the page when an unlisted site embeds it (Chrome, Edge, Safari). Also set this header on your web server, which every browser honours: `Content-Security-Policy: frame-ancestors 'self'` (IIS: `web.config` `<customHeaders>`; nginx: `add_header`; Apache: `Header set`).
+- The **Iframe Embed** sample has a working parent page (`/embed/host.html`) and a Unity script that keeps the state.
+
 ## Accessibility sample (screen readers)
 
 The package ships an **Accessibility** sample: **Window → Package Manager → Hybrid Live Preview → Samples → Accessibility → Import**. It makes uGUI screens readable by NVDA, VoiceOver and JAWS, in the Play preview and in the WebGL build:
@@ -240,6 +264,7 @@ The layer is `pointer-events: none` like in the preview, so clicks pass through 
 | Preview WebGL Build | Serves the last build at `http://127.0.0.1:4173/` and opens it in Chrome. |
 | Install Web App | Copies the template and runs `npm install` now. |
 | Accessibility → Install Web Files / Add startA11y() To main.js | Only with the Accessibility sample imported: (re)copies its page files to `src/a11y/`, or turns the layer on in `main.js`. |
+| Iframe Embed → Install Host Page / Add enableParentRelay() To main.js | Only after importing the Iframe Embed sample: copy the parent page to `public/embed/`, or turn on the relay in `main.js` |
 | Stop Vite And Chrome | Closes leftover processes. |
 | About | Logs the installed version. |
 

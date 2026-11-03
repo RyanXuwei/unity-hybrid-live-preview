@@ -133,6 +133,33 @@ yourself. Name buttons and images with the `A11yLabel` component, speak lines wi
 In page code use `appendChild`, not `append` (the WebGL template's loading bar replaces `Element.prototype.append`),
 and set `lang` to the UI text's language.
 
+## Embedding the page in an iframe (parent page talks to Unity)
+
+When another page embeds this page with `<iframe>`, `window.HybridBridge` exists only inside the iframe.
+The parent talks to Unity through a postMessage relay; Unity code does not change.
+
+```js
+// HybridPreviewWeb/src/main.js (the embedded page)
+import { enableParentRelay, guardEmbedding } from './hlp/index.js';
+guardEmbedding();      // other sites may not embed this page (same origin only by default)
+enableParentRelay();   // forward Unity messages to the parent, parent messages to Unity
+
+// Parent page: copy src/hlp/hybrid-bridge-host.js into the parent site.
+import { connectHybridBridge } from './hybrid-bridge-host.js';
+const unity = connectHybridBridge(document.querySelector('iframe'));
+unity.send('door:open', { id: 'A1' });
+unity.on('sensor', (data) => { ... });
+```
+
+- Same origin by default. A parent on another origin must be listed on both sides:
+  `enableParentRelay({ origins: ['https://parent.example'] })`, `connectHybridBridge(iframe, { origin: 'https://game.example' })`.
+  Never use `'*'` outside a quick test.
+- `enableParentRelay({ types: [...], toUnity: [...] })` limits which types reach the parent and Unity.
+- The parent follows the same rules as the page: it keeps no game state, asks with `<area>:get` when it
+  loads, and shows what Unity sends. `HybridBridge.on('*', handler)` receives every Unity message.
+- Pair `guardEmbedding()` with the server header `Content-Security-Policy: frame-ancestors 'self'`.
+- Working example: the **Iframe Embed** sample (`EmbedDemo.cs`, `public/embed/host.html`).
+
 ## Unity-side requirements
 
 - Read input through the **Input System** (`Mouse.current`, `Keyboard.current`, Input Actions,

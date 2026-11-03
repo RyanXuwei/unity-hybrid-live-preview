@@ -1,6 +1,6 @@
 {
   "name": "com.ryanxuwei.hybrid-live-preview",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "displayName": "Hybrid Live Preview",
   "description": "Press Play in the Unity Editor and preview your game in Chrome the way a WebGL build would run: the 3D view streams over WebRTC, your own HTML/CSS/JS UI sits on top, and mouse, keyboard and touch input flow back into Unity.",
   "unity": "6000.3",
@@ -29,6 +29,11 @@
       "displayName": "Accessibility",
       "description": "Screen reader layer for uGUI: buttons, images and text become real HTML elements over the game (Tab, Enter, NVDA/VoiceOver), plus spoken subtitles. Works in the Play preview and the WebGL build.",
       "path": "Samples~/Accessibility"
+    },
+    {
+      "displayName": "Iframe Embed",
+      "description": "A parent page embeds the Unity page with <iframe> and talks to Unity through HybridBridge (postMessage relay, same-origin by default, origin checks, embedding guard). The game state stays in Unity; both pages only show it.",
+      "path": "Samples~/IframeEmbed"
     }
   ]
 }

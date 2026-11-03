@@ -6,6 +6,8 @@ import { startUnityCanvas } from './webgl.js';
 
 // window.HybridBridge, also importable: import { bridge } from './hlp/index.js'.
 export { bridge };
+// Lets a parent page that embeds this page in an <iframe> talk to Unity (see embed.js).
+export { enableParentRelay, guardEmbedding } from './embed.js';
 
 // Starts the Unity stream in `video` and shows the collapsible status panel.
 // Returns the live connection state (also exposed as window.__hlp).

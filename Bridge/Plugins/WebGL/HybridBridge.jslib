@@ -47,7 +47,8 @@ var HybridBridgePlugin = {
           value: function (type, json) {
             var payload = null;
             try { payload = JSON.parse(json); } catch (e) { payload = json; }
-            var list = (handlers[type] || []).slice();
+            // Handlers for this type, then the '*' handlers that see every message.
+            var list = (handlers[type] || []).concat(type === '*' ? [] : handlers['*'] || []);
             for (var i = 0; i < list.length; i++) {
               try { list[i](payload, type); }
               catch (e) { console.error('[HybridBridge] handler for "' + type + '" failed', e); }

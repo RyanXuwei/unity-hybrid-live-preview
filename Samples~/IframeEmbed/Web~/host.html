@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iframe Embed demo</title>
+    <!-- Iframe Embed sample: a parent page that embeds the Unity page (../) and talks to it through
+         hybrid-bridge-host.js. Lives in HybridPreviewWeb/public/embed/, so it is served at /embed/host.html in
+         the Play preview and copied next to the WebGL build. -->
+    <style>
+      :root { color-scheme: dark; --bar: #14181f; --line: #2a313c; --text: #e8ecf2; --muted: #9aa4b2; --ok: #4ade80; --off: #f87171; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #0b0d11; color: var(--text); font: 14px/1.4 system-ui, sans-serif; }
+      body { display: grid; grid-template-rows: auto 1fr; }
+      header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; background: var(--bar); border-bottom: 1px solid var(--line); }
+      h1 { font-size: 15px; margin: 0 8px 0 0; }
+      .status { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--off); }
+      .dot.on { background: var(--ok); }
+      .score { font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 600; min-width: 4ch; }
+      button { font: inherit; color: var(--text); background: #222935; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+      button:hover { background: #2b3442; }
+      #log { margin-left: auto; color: var(--muted); font: 12px ui-monospace, monospace; max-width: 40ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      iframe { width: 100%; height: 100%; border: 0; display: block; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Parent page</h1>
+      <span class="status"><span class="dot" id="dot"></span><span id="link">waiting for the game page</span></span>
+      <span>Score <span class="score" id="score">-</span></span>
+      <button id="pause" type="button">Pause</button>
+      <button id="reset" type="button">Reset</button>
+      <span id="log" aria-live="polite"></span>
+    </header>
+    <!-- allow: fullscreen and autoplay for the player; the game page itself must call enableParentRelay(). -->
+    <iframe id="game" src="../" title="Unity game" allow="fullscreen; autoplay"></iframe>
+
+    <script type="module">
+      import { connectHybridBridge } from './hybrid-bridge-host.js';
+
+      const $ = (id) => document.getElementById(id);
+      // Same origin by default. For a game page on another origin: { origin: 'https://game.example.com' }.
+      const unity = connectHybridBridge($('game'));
+      let paused = false;
+
+      // The parent only shows Unity's state and asks for changes; it keeps no game state of its own.
+      unity.on('embed:state', (state) => {
+        paused = state.paused;
+        $('score').textContent = state.score;
+        $('pause').textContent = paused ? 'Resume' : 'Pause';
+        $('dot').classList.add('on');
+        $('link').textContent = `connected · ${state.scene}`;
+      });
+      unity.on('*', (data, type) => ($('log').textContent = `${type} ${JSON.stringify(data)}`));
+
+      $('pause').addEventListener('click', () => unity.send('embed:pause', { paused: !paused }));
+      $('reset').addEventListener('click', () => unity.send('embed:reset'));
+
+      // Ask once on load; queued until the relay is ready.
+      unity.send('embed:get');
+    </script>
+  </body>
+</html>
